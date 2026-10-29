@@ -2457,7 +2457,7 @@ function vToday(){
   const last=sorted().slice(-1)[0];
   return `${sampleBanner()}
   <section class="block"><div class="row-between"><h1 class="h1">Ready to train</h1><span class="label">${new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})}</span></div>
-  <button class="btn primary wide big-start" data-a="startEmpty">Start empty workout</button></section>
+  <button class="btn primary wide big-start" data-a="startEmpty">Start a workout</button><span class="muted small" style="text-align:center">Pick your exercises first. The timer starts when you're ready.</span></section>
   <section class="block"><span class="label">Last 7 days</span>
   <div class="stats"><div><span class="label">Workouts</span><b>${week.length}</b></div><div><span class="label">Working sets</span><b>${vs.n}</b></div><div><span class="label">Volume</span><b>${fvol(vs.v)}<small>${wu()}</small></b></div></div></section>
   ${streakCard()}
@@ -2761,12 +2761,13 @@ function renderSheet(){
 }
 function shPicker(){
   const p=UI.picker;
-  return sheet(p.mode==='replace'?'Replace exercise':'Add exercises',`<div class="list" id="picklist">${pickRows()}</div>`,
-  p.mode==='replace'?'':`<button class="btn primary" data-a="pickDone" ${p.sel.length?'':'disabled'} id="pickbtn">${p.sel.length?`Add ${p.sel.length} exercise${p.sel.length>1?'s':''}`:'Select exercises'}</button>`,
-  {tall:true,top:`<input class="input" id="pickq" data-in="pickq" value="${esc(p.q)}" placeholder="Search ${Object.keys(EXM).length} exercises or pick a muscle" type="search" autocomplete="off" aria-label="Search exercises">
+  return sheet(p.mode==='replace'?'Replace exercise':p.mode==='new'?'Build your workout':'Add exercises',`<div class="list" id="picklist">${pickRows()}</div>`,
+  p.mode==='replace'?'':`<button class="btn primary" data-a="pickDone" ${p.sel.length?'':'disabled'} id="pickbtn">${pickBtnText()}</button>`,
+  {tall:true,top:`${p.mode==='new'?'<span class="muted small">Pick your exercises in the order you want to do them. The workout and timer start when you tap Start.</span>':''}<input class="input" id="pickq" data-in="pickq" value="${esc(p.q)}" placeholder="Search ${Object.keys(EXM).length} exercises or pick a muscle" type="search" autocomplete="off" aria-label="Search exercises">
   <div id="pickfilter">${muscleFilterChip(p.muscle,'pickMuscle')}</div>
   <label class="eq" style="border:0;padding:0;background:none"><input type="checkbox" id="pickmine" data-in="pickmine" ${p.mine?'checked':''}> Only what my equipment allows</label>`});
 }
+function pickBtnText(){const p=UI.picker;const n=p.sel.length;if(p.mode==='new')return n?`Start workout · ${n} exercise${n>1?'s':''}`:'Select exercises to start';return n?`Add ${n} exercise${n>1?'s':''}`:'Select exercises'}
 function pickRow(e,na,q){const p=UI.picker;const on=p.sel.includes(e.id);return `<div class="pickrow"><button class="li ${on?'sel':''} ${na?'na':''}" data-a="pickToggle" data-id="${e.id}"><span class="box">${on?I.check:''}</span>${mth(e.fm)}<div><div class="t1">${hl(e.name,q)}</div><div class="t2">${na?'Needs '+esc(e.eq.filter(x=>!S.settings.equipment.includes(x)).map(x=>EQ[x]).join(', ')):esc(subOf(e))}</div></div></button><button class="mini info" data-a="openEx" data-id="${e.id}" aria-label="How to do ${esc(e.name)}" title="How to">?</button></div>`}
 function pickRows(){
   const p=UI.picker;const items=searchEx(p.q,p.muscle,p.mine);
@@ -2904,20 +2905,20 @@ function cleanSS(){const xs=S.active.exercises;xs.forEach((x,i)=>{if(!x.ss)retur
 function setPref(id,f,v){S.exPrefs[id]=Object.assign(S.exPrefs[id]||{},{[f]:v})}
 function rerenderWarm(){const W=UI.warm;const ae=S.active.exercises[W.i];const st=$('#warmw')?.value;renderSheet();const el=$('#warmw');if(el&&st!=null&&document.activeElement!==el){el.value=st}}
 const A={
-  startEmpty(){startWorkout(defaultName(),[])},
+  startEmpty(){if(S.active){location.hash='#today';return}A.pick({mode:'new'})},
   startRoutine(d){if(S.active){toast('Finish or discard the current workout first');location.hash='#today';return}const r=S.routines.find(x=>x.id===d.id);startWorkout(r.name,r.exercises.filter(x=>EXM[x.exId]).map(x=>makeAE(x.exId,x)),r.id)},
   startWith(d){if(S.active)return A.addToActive(d);startWorkout(defaultName(),[makeAE(d.id)])},
   addToActive(d){S.active.exercises.push(makeAE(d.id));if(S.settings.autoWarm)addAutoWarm(S.active.exercises.length-1);save();UI.sheet=null;if(location.hash!=='#today')location.hash='#today';else render();toast(`Added ${ex(d.id).name}`)},
   repeatWorkout(d){if(S.active){toast('Finish or discard the current workout first');return}const w=S.workouts.find(x=>x.id===d.id);const seen=[];w.exercises.forEach(ae=>{if(!seen.find(s=>s.exId===ae.exId))seen.push({exId:ae.exId,n:ae.sets.filter(isWork).length||3,repMin:ae.repMin,repMax:ae.repMax,rest:ae.rest})});startWorkout(w.name,seen.map(s=>makeAE(s.exId,{sets:s.n,repMin:s.repMin,repMax:s.repMax,rest:s.rest})))},
   saveAsRoutine(d){const w=S.workouts.find(x=>x.id===d.id);const ex2=[];w.exercises.forEach(ae=>{if(!ex2.find(s=>s.exId===ae.exId))ex2.push({exId:ae.exId,sets:ae.sets.filter(isWork).length||3,repMin:ae.repMin,repMax:ae.repMax,rest:ae.rest})});UI.editing={id:uid(),name:w.name,exercises:ex2,_new:true};UI.sheet=null;UI.view='routines';if(location.hash!=='#routines')location.hash='#routines';render()},
-  pick(d){UI.picker={mode:d.mode,q:'',muscle:'all',mine:true,sel:[],i:d.i!=null?+d.i:null};UI.sheet={kind:'picker'};renderSheet();setTimeout(()=>{const q=$('#pickq');if(q&&matchMedia('(pointer:fine)').matches)q.focus()},30)},
+  pick(d){UI.picker={mode:d.mode,q:'',muscle:'all',mine:true,sel:[],i:d.i!=null?+d.i:null};UI.sheet={kind:'picker'};renderSheet();setTimeout(()=>{const q=$('#pickq');if(q&&window.matchMedia&&matchMedia('(pointer:fine)').matches)q.focus()},30)},
   pickMuscle(d){UI.picker.muscle=d.m;$('#picklist').innerHTML=pickRows();$('#sheetbody').scrollTop=0;$('#pickfilter').innerHTML=muscleFilterChip(d.m,'pickMuscle')},
   pickToggle(d,el){const p=UI.picker;
     if(p.mode==='replace'){const ae=S.active.exercises[p.i];const old=ae.exId;S.active.exercises[p.i]=makeAE(d.id,{sets:ae.sets.filter(isWork).length||3});save();UI.sheet=null;render();toast(`Replaced ${ex(old).name}`);return}
     const k=p.sel.indexOf(d.id);k>=0?p.sel.splice(k,1):p.sel.push(d.id);const on=k<0;
     document.querySelectorAll(`#picklist [data-a="pickToggle"][data-id="${d.id}"]`).forEach(x=>{x.classList.toggle('sel',on);x.querySelector('.box').innerHTML=on?I.check:''});
-    const b=$('#pickbtn');if(b){b.disabled=!p.sel.length;b.textContent=p.sel.length?`Add ${p.sel.length} exercise${p.sel.length>1?'s':''}`:'Select exercises'}},
-  pickDone(){const p=UI.picker;if(p.mode==='active'){p.sel.forEach(id=>{S.active.exercises.push(makeAE(id));if(S.settings.autoWarm)addAutoWarm(S.active.exercises.length-1)});save()}else if(p.mode==='routine'){p.sel.forEach(id=>{const pr=prefsFor(id);UI.editing.exercises.push({exId:id,sets:3,repMin:pr.repMin,repMax:pr.repMax,rest:null})})}UI.sheet=null;render()},
+    const b=$('#pickbtn');if(b){b.disabled=!p.sel.length;b.textContent=pickBtnText()}},
+  pickDone(){const p=UI.picker;if(p.mode==='new'){if(!p.sel.length)return;UI.sheet=null;startWorkout(defaultName(),p.sel.map(id=>makeAE(id)));toast('Workout started');return}if(p.mode==='active'){p.sel.forEach(id=>{S.active.exercises.push(makeAE(id));if(S.settings.autoWarm)addAutoWarm(S.active.exercises.length-1)});save()}else if(p.mode==='routine'){p.sel.forEach(id=>{const pr=prefsFor(id);UI.editing.exercises.push({exId:id,sets:3,repMin:pr.repMin,repMax:pr.repMax,rest:null})})}UI.sheet=null;render()},
   closeSheet(d,el,ev){if(d.self&&ev.target!==el)return;if(UI.sheet&&UI.sheet.back){UI.sheet=UI.sheet.back;renderSheet();return}UI.sheet=null;if(S.active)render();else renderSheet()},
   exMenu(d){UI.sheet={kind:'exMenu',i:+d.i};renderSheet()},
   toggleBarView(d){const ae=S.active.exercises[d.i];ae.bar=ae.bar===false;save();UI.sheet=null;render()},
