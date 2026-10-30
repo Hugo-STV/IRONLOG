@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Ironlog</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#1d5bb8">
@@ -318,10 +318,16 @@ textarea.input{min-height:140px;font:12px/1.4 var(--f-mono)}
 .callout b{font:700 20px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
 
 /* sheet */
-.scrim{position:fixed;inset:0;z-index:20;background:rgba(8,12,18,.5);display:flex;align-items:flex-end;justify-content:center}
-.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;max-height:92dvh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
-.sheet.tall{height:90vh;height:90dvh}
-@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:18px;max-height:86vh}.sheet.tall{height:86vh}}
+.scrim{position:fixed;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100%);z-index:20;background:rgba(8,12,18,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92vh;max-height:92dvh;max-height:calc(var(--vvh,100dvh) * .94);border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.tall{height:90vh;height:90dvh;height:calc(var(--vvh,100dvh) * .92)}
+/* the barbell calculator docks to the top so the phone keyboard never covers the weight box or the bar */
+.scrim.attop{align-items:flex-start}
+.scrim.attop .sheet{border-radius:0 0 18px 18px;padding-top:env(safe-area-inset-top,0px);padding-bottom:0;max-height:calc(var(--vvh,100dvh) - 8px)}
+.scrim.attop .sheet-h{padding-top:10px;padding-bottom:6px}
+.scrim.attop .sheet-b{gap:10px;padding-top:4px}
+.scrim.attop .bbbig{padding:6px}
+@media (min-width:700px){.scrim{align-items:center}.sheet{border-radius:18px;max-height:86vh}.sheet.tall{height:86vh}.scrim.attop{align-items:flex-start;padding-top:24px}.scrim.attop .sheet{border-radius:18px}}
 .sheet-h{flex:none;display:flex;align-items:center;gap:10px;padding:16px 18px 10px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
 .sheet-h h2{flex:1;font:700 22px/1.1 var(--f-display);text-transform:uppercase;letter-spacing:.03em}
 .sheet-top{flex:none;display:grid;gap:10px;padding:0 18px 10px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
@@ -2752,7 +2758,7 @@ function vPrefs(){
 }
 
 /* ---------- sheets ---------- */
-function sheet(title,body,foot,o={}){const back=UI.sheet&&UI.sheet.back;return `<div class="scrim" data-a="closeSheet" data-self="1"><div class="sheet ${o.tall?'tall':''}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h">${back?`<button class="backlink" data-a="closeSheet">← Back</button>`:''}<h2>${esc(title)}</h2><button class="mini" data-a="closeSheet" aria-label="Close">${I.x}</button></div>${o.top?`<div class="sheet-top">${o.top}</div>`:''}<div class="sheet-b" id="sheetbody">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`}
+function sheet(title,body,foot,o={}){const back=UI.sheet&&UI.sheet.back;return `<div class="scrim ${o.pos==='top'?'attop':''}" data-a="closeSheet" data-self="1"><div class="sheet ${o.tall?'tall':''}" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-h">${back?`<button class="backlink" data-a="closeSheet">← Back</button>`:''}<h2>${esc(title)}</h2><button class="mini" data-a="closeSheet" aria-label="Close">${I.x}</button></div>${o.top?`<div class="sheet-top">${o.top}</div>`:''}<div class="sheet-b" id="sheetbody">${body}</div>${foot?`<div class="sheet-f">${foot}</div>`:''}</div></div>`}
 function renderSheet(){
   const s=UI.sheet;const el=$('#sheet');if(!s){el.innerHTML='';document.body.style.overflow='';return}
   document.body.style.overflow='hidden';
@@ -2815,7 +2821,7 @@ function shBar(){
   <div class="field"><span class="label">Bar</span><div class="chips">${bars.map(b=>{const k=fromD(b);return `<button class="chip ${Math.abs(k-barK)<0.05?'on':''}" data-a="barPick" data-b="${b}">${b} ${wu()}</button>`}).join('')}</div></div>
   <div class="field"><span class="label">Quick add per side</span><div class="chips">${owned().map(p=>`<button class="chip" data-a="barAdd" data-p="${p}"><span class="plate" style="background:${pspec(p)[0]};color:${pspec(p)[1]};min-width:24px;height:18px;font-size:11px">${p}</span></button>`).join('')}<button class="chip" data-a="barClear">Clear</button></div></div>
   <p class="muted small" style="margin:0">Load the biggest plates first, closest to the collar. Only the plates ticked in Settings are used.</p>`,
-  B.from?`<button class="btn" data-a="closeSheet">Close</button><button class="btn primary" data-a="barUse" ${kg?'':'disabled'}>Use ${kg?fwu(exact?kg:lo):''} for set</button>`:`<button class="btn primary" data-a="closeSheet">Done</button>`);
+  B.from?`<button class="btn" data-a="closeSheet">Close</button><button class="btn primary" data-a="barUse" ${kg?'':'disabled'}>Use ${kg?fwu(exact?kg:lo):''} for set</button>`:`<button class="btn primary" data-a="closeSheet">Done</button>`,{pos:'top'});
 }
 function barView(kg,barK){
   const L=plateLoad(kg||0,barK);const lo=loadable(kg||0,barK);
@@ -3137,6 +3143,7 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 function route(){let h=location.hash.replace('#','');if(h==='programs'){h='routines';UI.rtab='programs';UI.progOpen=null;UI.editProg=null;UI.wiz=null;UI.editing=null}UI.view=VIEWS.includes(h)?h:'today';if(UI.view!=='routines'){UI.progOpen=null;UI.editProg=null;UI.wiz=null}if(UI.view!=='routines')UI.editing=null;UI.sheet=null;render();window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
 
+(()=>{const v=window.visualViewport;if(!v)return;const r=document.documentElement;const f=()=>{r.style.setProperty('--vvh',v.height+'px');r.style.setProperty('--vvt',v.offsetTop+'px')};v.addEventListener('resize',f);v.addEventListener('scroll',f);f()})();
 document.body.insertAdjacentHTML('afterbegin',bodySprite());
 load();route();setInterval(tick,1000);
 })();
