@@ -2810,8 +2810,8 @@ function shBar(){
   const step=(owned().slice(-1)[0]||(isLb()?2.5:1.25))*2;
   const exact=!L.under&&L.rem<1e-6;
   return sheet('Barbell calculator',`
-  <div class="wtctl"><button data-a="barStep" data-d="-${step}" aria-label="Remove ${step} ${wu()}">−</button><input id="barin" inputmode="decimal" data-in="barkg" value="${kg?esc(fw(kg)):''}" placeholder="0" aria-label="Total weight in ${wu()}"><button data-a="barStep" data-d="${step}" aria-label="Add ${step} ${wu()}">+</button></div>
-  <div id="barview">${barView(kg,barK)}</div>
+  <div class="wtctl"><button data-a="barStep" data-d="-${step}" aria-label="Remove ${step} ${wu()}">−</button><input id="barin" inputmode="decimal" data-in="barkg" value="${kg?esc(fw(kg)):''}" placeholder="${esc(fw(barK))}" enterkeyhint="done" aria-label="Total weight in ${wu()}"><button data-a="barStep" data-d="${step}" aria-label="Add ${step} ${wu()}">+</button></div>
+  <div id="barview">${barView(kg||barK,barK)}</div>
   <div class="field"><span class="label">Bar</span><div class="chips">${bars.map(b=>{const k=fromD(b);return `<button class="chip ${Math.abs(k-barK)<0.05?'on':''}" data-a="barPick" data-b="${b}">${b} ${wu()}</button>`}).join('')}</div></div>
   <div class="field"><span class="label">Quick add per side</span><div class="chips">${owned().map(p=>`<button class="chip" data-a="barAdd" data-p="${p}"><span class="plate" style="background:${pspec(p)[0]};color:${pspec(p)[1]};min-width:24px;height:18px;font-size:11px">${p}</span></button>`).join('')}<button class="chip" data-a="barClear">Clear</button></div></div>
   <p class="muted small" style="margin:0">Load the biggest plates first, closest to the collar. Only the plates ticked in Settings are used.</p>`,
@@ -3046,11 +3046,11 @@ const A={
   openBar(d){
     let kg=null,barK=S.settings.barKg,from=null;
     if(d.i!=null&&S.active){const ae=S.active.exercises[d.i];const e=ex(ae.exId);barK=barKg(e);from={i:+d.i,j:+d.j};const s=ae.sets[d.j];kg=s.w;if(kg==null){const {prev,sg}=cardCtx(ae);const tg=setTarget(ae,+d.j,sg,prevFor(ae,+d.j,prev));kg=tg&&tg.w}}
-    UI.bar={kg:kg||(isLb()?135/LB:60),barK,from};UI.sheet={kind:'bar'};renderSheet()},
+    UI.bar={kg:kg||null,barK,from};UI.sheet={kind:'bar'};renderSheet();focusBar()},
   barStep(d){const B=UI.bar;const cur=toD(B.kg||B.barK);B.kg=fromD(Math.max(toD(B.barK),round(cur+ +d.d,2)));refreshBar(true)},
-  barPick(d){UI.bar.barK=fromD(+d.b);refreshBar(true,true)},
+  barPick(d){UI.bar.barK=fromD(+d.b);refreshBar(true,true);focusBar()},
   barAdd(d){const B=UI.bar;const L=plateLoad(B.kg||B.barK,B.barK);const base=L.under?toD(B.barK):loadable(B.kg,B.barK);B.kg=fromD(base+2*(+d.p));refreshBar(true)},
-  barClear(){UI.bar.kg=UI.bar.barK;refreshBar(true)},
+  barClear(){UI.bar.kg=null;refreshBar(true);focusBar()},
   barUse(){const B=UI.bar;const L=plateLoad(B.kg,B.barK);const w=L.under?B.kg:fromD(loadable(B.kg,B.barK));const s=S.active.exercises[B.from.i].sets[B.from.j];s.w=w;save();UI.sheet=null;render();toast(`Set to ${fwu(w)}`)},
   exportData(){UI.sheet={kind:'export'};renderSheet()},
   copyExport(){const t=$('#exporttxt');const done=()=>toast('Backup copied');try{navigator.clipboard.writeText(t.value).then(done,()=>{t.select();toast('Press Ctrl/Cmd+C to copy the selected text')})}catch(e){t.select();toast('Press Ctrl/Cmd+C to copy the selected text')}},
@@ -3066,10 +3066,12 @@ const A={
 };
 function refreshBar(updateInput,full){
   if(full){renderSheet();return}
-  const B=UI.bar;$('#barview').innerHTML=barView(B.kg,B.barK);
+  const B=UI.bar;$('#barview').innerHTML=barView(B.kg||B.barK,B.barK);
   if(updateInput){const i=$('#barin');if(i)i.value=B.kg?fw(B.kg):''}
-  const u=document.querySelector('[data-a="barUse"]');if(u){const L=plateLoad(B.kg||0,B.barK);u.disabled=!B.kg;u.textContent=`Use ${fwu(L.under?B.kg:fromD(loadable(B.kg,B.barK)))} for set`}
+  const u=document.querySelector('[data-a="barUse"]');if(u){const L=plateLoad(B.kg||0,B.barK);u.disabled=!B.kg;u.textContent=B.kg?`Use ${fwu(L.under?B.kg:fromD(loadable(B.kg,B.barK)))} for set`:'Use for set'}
 }
+/* the weight box opens ready to type: empty (bar only) or with the set's weight selected so typing replaces it */
+function focusBar(){setTimeout(()=>{const i=$('#barin');if(i){i.focus();i.select()}},40)}
 function defaultName(){const h=new Date().getHours();return h<11?'Morning workout':h<17?'Afternoon workout':'Evening workout'}
 
 /* ---------- events ---------- */
@@ -3129,7 +3131,8 @@ document.addEventListener('submit',ev=>{
   if(f.dataset.form==='bw'){const n=pnum($('#bwin').value);if(n==null||n<=0){toast('Enter your weight as a number');return}S.bw.push({t:Date.now(),kg:fromD(n)});save();render();toast('Body weight logged')}
   if(f.dataset.form==='custom'){const fd=new FormData(f);const name=String(fd.get('name')||'').trim();if(!name)return;let id='c-'+slug(name);if(EXM[id])id+='-'+uid().slice(0,4);S.custom.push({id,name,muscle:fd.get('muscle'),type:fd.get('type'),eq:fd.getAll('eq'),custom:true,fm:null});rebuildEx();save();UI.sheet=null;render();toast(`${name} created`)}
 });
-document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&UI.sheet){UI.sheet=null;renderSheet()}});
+document.addEventListener('focusin',ev=>{if(ev.target&&ev.target.id==='barin')setTimeout(()=>{try{ev.target.select()}catch(e){}},0)});
+document.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target&&ev.target.id==='barin'){ev.target.blur();return}if(ev.key==='Escape'&&UI.sheet){UI.sheet=null;renderSheet()}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
 function route(){let h=location.hash.replace('#','');if(h==='programs'){h='routines';UI.rtab='programs';UI.progOpen=null;UI.editProg=null;UI.wiz=null;UI.editing=null}UI.view=VIEWS.includes(h)?h:'today';if(UI.view!=='routines'){UI.progOpen=null;UI.editProg=null;UI.wiz=null}if(UI.view!=='routines')UI.editing=null;UI.sheet=null;render();window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
