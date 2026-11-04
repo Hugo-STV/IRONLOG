@@ -129,6 +129,18 @@ section.block{display:grid;gap:12px;margin-top:26px}
 .ill figure{margin:0;position:relative;border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--line);aspect-ratio:1/1;display:grid;place-items:center;padding:6px}
 .ill img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .ill figcaption{position:absolute;left:7px;top:7px;background:rgba(10,14,20,.72);color:#fff;font:600 10.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px}
+.qlw{display:grid;gap:6px;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--surface)}
+.qlh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.qli{display:flex;gap:10px;align-items:center;padding:4px 0;border-top:1px solid var(--line)}
+.qli:first-of-type{border-top:0}
+.qli.bad{opacity:.85}
+.qlsel{width:100%;border:0;background:transparent;font:600 14px var(--f-body);color:var(--ink);padding:0;margin:0 0 2px -2px;max-width:100%}
+#qlocr{background:var(--accent-soft);border-radius:10px;padding:8px 10px}
+.lastline{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:7px 8px 7px 12px;margin-top:-2px}
+.lastline .lk{font:700 10.5px var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.lastline .lv{flex:1;min-width:0;font:600 13px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.lastline .lv i{font-style:normal;color:var(--muted);margin:0 5px}
+.lastline .btn{min-height:30px}
 .howpics img,.ill img{cursor:zoom-in}
 .lb{position:fixed;inset:0;z-index:40;background:#07090c;display:grid;grid-template-rows:auto 1fr auto;padding:calc(env(safe-area-inset-top,0px) + 10px) max(10px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) max(10px,env(safe-area-inset-left,0px));touch-action:pan-y pinch-zoom}
 .lb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#fff;font:600 13px var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:4px 6px}
@@ -341,6 +353,8 @@ textarea.input{min-height:140px;font:12px/1.4 var(--f-mono)}
 .cal-g .d.on{background:var(--accent-tint);color:var(--accent);font-weight:700;cursor:pointer}
 .cal-g .d.today{box-shadow:inset 0 0 0 2px var(--accent);color:var(--accent);font-weight:700}
 .cal-g .d i{position:absolute;top:2px;right:4px;font:700 9px var(--f-body);font-style:normal}
+.hacts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hacts .btn{min-height:46px}
 .mhead{font:700 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 2px -2px}
 .hempty{display:grid;justify-items:center;gap:10px;text-align:center;padding:30px 18px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
 .hempty svg{width:48px;height:48px;color:var(--accent)}
@@ -2093,7 +2107,10 @@ const fdateS=t=>new Date(t).toLocaleDateString(undefined,{month:'short',day:'num
 const hasBar=e=>e.eq.some(q=>q==='bb'||q==='ez'||q==='tb');
 const isBarLift=e=>hasBar(e)&&e.type==='wr'&&!/landmine|t-bar|meadows/i.test(e.name);
 function barKg(e){if(e&&e.eq.includes('tb'))return isLb()?55/LB:25;if(e&&e.eq.includes('ez')&&!e.eq.includes('bb'))return isLb()?25/LB:10;return S.settings.barKg||20}
-function incD(e){if(isLb())return e.eq.includes('db')||e.eq.includes('kb')?5:5;if(e.eq.includes('kb'))return 4;if(e.eq.includes('db'))return 2;return 2.5}
+const LOWER_BIG=/squat|deadlift|leg press|hip thrust|rack pull|good morning|hack|belt squat|pendulum|sumo|trap bar/i;
+function incD(e){const big=LOWER_BIG.test(e.name)&&!isIso(e)&&(hasBar(e)||e.eq.includes('mc'));
+  if(isLb()){if(big)return 10;return 5}
+  if(e.eq.includes('kb')&&!hasBar(e))return 4;if(e.eq.includes('db')&&!hasBar(e))return 2;if(big)return 5;return 2.5}
 function roundInc(kg,e){const inc=incD(e);return fromD(Math.round(toD(kg)/inc)*inc)}
 function floorInc(kg,e){const inc=incD(e);return fromD(Math.floor(toD(kg)/inc+1e-6)*inc)}
 const PERF={e1:['Est. 1RM',1],rm3:['Est. 3RM',3],rm5:['Est. 5RM',5],rm8:['Est. 8RM',8],rm10:['Est. 10RM',10],rm12:['Est. 12RM',12]};
@@ -2138,7 +2155,7 @@ function suggestRaw(exId,lo,hi,beforeT){
     if(at.every(s=>s.r>=hi))return {w:roundInc(top+fromD(incD(e)),e),r:lo,kind:'up',when,why:`You hit ${hi} reps on every set at ${fwu(top)}. Add weight`};
     {const rs=at.filter(s=>s.rir!=null);if(rs.length===at.length&&rs.every(s=>s.rir>=3)&&best>=lo)return {w:roundInc(top+fromD(incD(e)),e),r:Math.min(best,hi),kind:'up',when,why:`Last time felt easy (3+ reps in reserve on every set). Add weight`}}
     const prev=ss[ss.length-2];
-    if(best<lo&&prev){const pws=prev.sets.filter(s=>s.w!=null&&s.r);if(pws.length){const pt=Math.max(...pws.map(s=>s.w));const pb=Math.max(...pws.filter(s=>Math.abs(s.w-pt)<1e-6).map(s=>s.r));if(Math.abs(pt-top)<1e-6&&pb<lo)return {w:roundInc(top*0.9,e),r:hi,kind:'down',when,why:`Missed ${lo} reps twice at ${fwu(top)}. Drop 10% and build back up`}}}
+    if(best<lo&&prev){const pws=prev.sets.filter(s=>s.w!=null&&s.r);if(pws.length){const pt=Math.max(...pws.map(s=>s.w));const pb=Math.max(...pws.filter(s=>Math.abs(s.w-pt)<1e-6).map(s=>s.r));if(Math.abs(pt-top)<1e-6&&pb<lo)return {w:top,r:lo,kind:'hold',when,why:`Missed ${lo} reps twice at ${fwu(top)}. Holding the weight until you own it`}}}
     if(best<lo)return {w:top,r:lo,kind:'same',when,why:`Stay at ${fwu(top)} and get every set to ${lo} reps`};
     return {w:top,r:Math.min(best+1,hi),kind:'same',when,why:`Last time ${fwu(top)} × ${best}. Beat it by a rep`};
   }
@@ -2330,6 +2347,95 @@ function ekFor(e){return EK[e.id]?{id:EK[e.id],exact:true}:null}
 function illHTML(e){const k=ekFor(e);if(!k)return '';
   return `<div class="ill">${[0,1].map(n=>`<figure><img loading="lazy" alt="${esc(e.name)}, ${n?'finish':'start'} position" src="ill/${k.id}-${n}.webp" onerror="this.closest('.ill').hidden=true"><figcaption>${n?'Finish':'Start'}</figcaption></figure>`).join('')}</div>
   <span class="muted small" style="font-size:11.5px">Illustration: <a href="https://github.com/everkinetic/data" target="_blank" rel="noopener">Everkinetic</a>, CC BY-SA 4.0</span>`}
+
+
+/* ---------- quick log: "Bench 135x8 135x8 135x7", one exercise per line ---------- */
+const QL_ALIAS={'bench':'bench-press-barbell','bench press':'bench-press-barbell','bp':'bench-press-barbell','flat bench':'bench-press-barbell','incline bench':'incline-bench-press-barbell','incline':'incline-bench-press-barbell','db bench':'bench-press-dumbbell','dumbbell bench':'bench-press-dumbbell','incline db':'incline-bench-press-dumbbell','incline db bench':'incline-bench-press-dumbbell','squat':'back-squat','squats':'back-squat','back squat':'back-squat','front squat':'front-squat','deadlift':'deadlift-barbell','deadlifts':'deadlift-barbell','dl':'deadlift-barbell','sumo':'sumo-deadlift','rdl':'romanian-deadlift-barbell','rdls':'romanian-deadlift-barbell','db rdl':'romanian-deadlift-dumbbell','ohp':'overhead-press-barbell','press':'overhead-press-barbell','overhead press':'overhead-press-barbell','military press':'overhead-press-barbell','shoulder press':'seated-overhead-press-dumbbell','db press':'seated-overhead-press-dumbbell','row':'bent-over-row-barbell','rows':'bent-over-row-barbell','bb row':'bent-over-row-barbell','barbell row':'bent-over-row-barbell','db row':'one-arm-row-dumbbell','cable row':'seated-cable-row','pullup':'pull-up','pullups':'pull-up','pull ups':'pull-up','pull up':'pull-up','chinup':'chin-up','chinups':'chin-up','chin ups':'chin-up','dips':'triceps-dip','dip':'triceps-dip','pushup':'push-up','pushups':'push-up','push ups':'push-up','curl':'barbell-curl','curls':'barbell-curl','bb curl':'barbell-curl','db curl':'dumbbell-curl','db curls':'dumbbell-curl','hammer':'hammer-curl','hammers':'hammer-curl','hammer curls':'hammer-curl','pulldown':'lat-pulldown','lat pulldown':'lat-pulldown','lats':'lat-pulldown','leg press':'leg-press','leg ext':'leg-extension','leg extensions':'leg-extension','leg curl':'lying-leg-curl','leg curls':'lying-leg-curl','lunges':'walking-lunge-dumbbell','lunge':'walking-lunge-dumbbell','hip thrust':'hip-thrust-barbell','hip thrusts':'hip-thrust-barbell','skulls':'skull-crusher-ez-bar','skull crushers':'skull-crusher-ez-bar','pushdown':'triceps-pushdown-rope','pushdowns':'triceps-pushdown-rope','tricep pushdown':'triceps-pushdown-rope','laterals':'lateral-raise-dumbbell','lateral raise':'lateral-raise-dumbbell','lateral raises':'lateral-raise-dumbbell','side raises':'lateral-raise-dumbbell','face pulls':'face-pull','facepull':'face-pull','shrugs':'shrug-dumbbell','calf raise':'standing-calf-raise-machine','calves':'standing-calf-raise-machine','calf raises':'standing-calf-raise-machine','plank':'plank','abs':'crunch','crunches':'crunch','flys':'chest-fly-dumbbell','flyes':'chest-fly-dumbbell','fly':'chest-fly-dumbbell','pec deck':'pec-deck','goblet':'goblet-squat-dumbbell','goblet squat':'goblet-squat-dumbbell','bulgarians':'bulgarian-split-squat-dumbbell','bss':'bulgarian-split-squat-dumbbell','hack':'hack-squat-machine','hack squat':'hack-squat-machine','good mornings':'good-morning','swings':'kettlebell-swing','kb swings':'kettlebell-swing'};
+const QL_MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,sept:8,oct:9,nov:10,dec:11};
+function qlDate(line){const t=line.trim().replace(/^(date|day)[:\s]+/i,'').replace(/^(mon|tue|wed|thu|fri|sat|sun)[a-z]*,?\s+/i,'');let m;const now=new Date();
+  if((m=t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/)))return new Date(+m[1],m[2]-1,+m[3],12);
+  if((m=t.match(/^(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?$/))){let y=m[3]?+m[3]:now.getFullYear();if(y<100)y+=2000;const d=new Date(y,m[1]-1,+m[2],12);if(!m[3]&&d>now)d.setFullYear(y-1);return d}
+  if((m=t.match(/^([a-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?$/i))&&QL_MON[m[1].slice(0,4).toLowerCase()]!=null||m&&QL_MON[m[1].slice(0,3).toLowerCase()]!=null){const mo=QL_MON[m[1].slice(0,4).toLowerCase()]??QL_MON[m[1].slice(0,3).toLowerCase()];const y=m[3]?+m[3]:now.getFullYear();const d=new Date(y,mo,+m[2],12);if(!m[3]&&d>now)d.setFullYear(y-1);return d}
+  if(/^today$/i.test(t))return new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);
+  if(/^yesterday$/i.test(t))return new Date(now.getFullYear(),now.getMonth(),now.getDate()-1,12);
+  return null}
+function qlClean(line){return line.replace(/[×✕✖*]/g,'x').replace(/(?<![xX\d.])(\d+(?:\.\d+)?)\s*(kg|kgs|lb|lbs)?\s*[xX]\s*(?=\d)/g,'$1$2x').replace(/(\d)[oO](?=\d|\b)/g,'$10').replace(/\bbw\b/ig,'BW').replace(/[–—]/g,'-')}
+/* returns {name, sets:[{w,r,t,unit}], rest} */
+function qlTokens(line){
+  let L=' '+qlClean(line)+' ';const sets=[];let m;const take=(re,fn)=>{L=L.replace(re,(...a)=>{fn(a);return ' '})};
+  take(/\b(\d+)\s*x\s*(\d+)\s*@\s*(\d+(?:\.\d+)?)\s*(kg|kgs|lb|lbs)?\b/gi,a=>{for(let k=0;k<+a[1];k++)sets.push({w:+a[3],r:+a[2],unit:a[4]})});
+  take(/\b(\d+(?:\.\d+)?)\s*(kg|kgs|lb|lbs)?\s*x\s*(\d+)\s*x\s*(\d+)\b/gi,a=>{for(let k=0;k<+a[4];k++)sets.push({w:+a[1],r:+a[3],unit:a[2]})});
+  take(/\b(\d+(?:\.\d+)?)\s*(kg|kgs|lb|lbs)?\s*x\s*(\d+)\b/gi,a=>sets.push({w:+a[1],r:+a[3],unit:a[2]}));
+  take(/\bBW\s*(?:\+\s*(\d+(?:\.\d+)?)\s*(kg|lb|lbs)?)?\s*x\s*(\d+)\b/gi,a=>sets.push({w:a[1]?+a[1]:null,r:+a[3],unit:a[2]}));
+  take(/(^|\s)x\s*(\d+)\b/gi,a=>sets.push({w:null,r:+a[2]}));
+  take(/\b(\d{1,2}):(\d{2})\b/g,a=>sets.push({t:+a[1]*60+ +a[2]}));
+  take(/\b(\d+)\s*(s|sec|secs|seconds)\b/gi,a=>sets.push({t:+a[1]}));
+  take(/\b(\d+)\s*(reps)\b/gi,a=>sets.push({w:null,r:+a[1]}));
+  const name=L.replace(/[:\-–,|]+/g,' ').replace(/\s+/g,' ').trim();
+  return {name,sets};
+}
+function qlResolve(name){
+  const n=name.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();if(!n)return {id:null,cands:[]};
+  const al=QL_ALIAS[n]||QL_ALIAS[n.replace(/s$/,'')];
+  const res=searchEx(name,'all',false).slice(0,6).map(x=>x.e.id);
+  if(al&&EXM[al])return {id:al,cands:[al,...res.filter(x=>x!==al)].slice(0,6),sure:true};
+  return {id:res[0]||null,cands:res,sure:false};
+}
+function qlParse(text,baseDate){
+  const out=[];let cur=null;let pendingName=null;
+  const newW=(d,title)=>{cur={date:d||baseDate,title:title||'',items:[]};out.push(cur)};
+  text.split(/\r?\n/).forEach((raw,ln)=>{const line=raw.trim();if(!line||/^[-=_*#\s]+$/.test(line))return;
+    const d=qlDate(line);if(d){newW(d);return}
+    const {name,sets}=qlTokens(line);
+    if(!cur)newW(baseDate);
+    if(sets.length&&!name){const last=cur.items[cur.items.length-1];if(last){last.sets.push(...sets);return}if(pendingName){cur.items.push({line:pendingName.line,name:pendingName.name,sets,...qlResolve(pendingName.name)});pendingName=null;return}return}
+    if(!sets.length){const r=qlResolve(name);if(r.sure||(r.id&&scoreOf(name,r.id)>=70)){cur.items.push({line:ln,name,sets:[],...r});return}
+      if(!cur.items.length&&!cur.title){cur.title=name;return}pendingName={line:ln,name};return}
+    cur.items.push({line:ln,name,sets,...qlResolve(name)});
+  });
+  return out.filter(w=>w.items.some(i=>i.sets.length));
+}
+function scoreOf(q,id){try{return score(ex(id),norm(q))}catch(e){return 0}}
+function qlSetFor(e,st,unitLb){
+  const conv=v=>v==null?null:(st.unit?(/lb/i.test(st.unit)?v/LB:v):fromD(v));
+  if(e.type==='t')return {type:'N',t:st.t??(st.r||null),done:true};
+  if(e.type==='dt')return {type:'N',t:st.t??null,d:null,done:true};
+  if(e.type==='r')return {type:'N',w:st.w?conv(st.w):null,r:st.r??null,done:true};
+  if(e.type==='wt')return {type:'N',w:conv(st.w),t:st.t??null,done:true};
+  return {type:'N',w:st.w!=null?conv(st.w):0,r:st.r??null,done:true};
+}
+function qlPreview(){
+  const Q=UI.ql;const ws=Q.parsed;
+  if(!Q.text.trim())return `<p class="muted small" style="margin:0">Type or paste your sets above, or import a photo. Your workout appears here to check before saving.</p>`;
+  if(!ws.length)return `<p class="small" style="margin:0;color:var(--danger)">No sets found yet. Write each exercise followed by weight x reps, like <span class="mono">Bench 135x8 135x8</span>.</p>`;
+  return ws.map((w,wi)=>`<div class="qlw"><div class="qlh"><b>${esc(w.title||'Workout')}</b><span class="muted small">${fdate(w.date)}</span></div>${w.items.filter(it=>it.sets.length).map((it,ii)=>{const e=it.id?ex(it.id):null;
+    return `<div class="qli ${e?'':'bad'}">${e?mth(e.fm):'<span class="mth" style="display:grid;place-items:center;color:var(--danger);font-weight:700">?</span>'}<div style="min-width:0;flex:1">
+    ${e?`<select class="qlsel" data-in="qlpick" data-w="${wi}" data-k="${it.line}" aria-label="Exercise for ${esc(it.name)}">${it.cands.map(c=>`<option value="${c}" ${c===it.id?'selected':''}>${esc(ex(c).name)}</option>`).join('')}</select>`:`<b style="color:var(--danger)">No match for "${esc(it.name)}"</b>`}
+    <div class="mono small">${it.sets.map(st=>e?esc(fset(e,Object.assign(qlSetFor(e,st),{}))):esc((st.w??'')+'x'+(st.r??''))).join(' · ')}</div></div>
+    ${e?`<button class="mini" data-a="openEx" data-id="${e.id}" aria-label="How to do ${esc(e.name)}" title="How to and video">?</button>`:''}</div>`}).join('')}</div>`).join('');
+}
+function qlRefresh(){const Q=UI.ql;Q.parsed=qlParse(Q.text,Q.date);(Q.picks||[]).forEach(([wi,k,id])=>{const it=Q.parsed[wi]&&Q.parsed[wi].items.find(x=>x.line==k);if(it){it.id=id;if(!it.cands.includes(id))it.cands.unshift(id)}});
+  const el=$('#qlprev');if(el)el.innerHTML=qlPreview();const b=$('#qlsave');if(b){const n=Q.parsed.filter(w=>w.items.some(i=>i.id&&i.sets.length)).length;b.disabled=!n;b.textContent=n>1?`Save ${n} workouts`:'Save workout'}}
+function shQuick(){const Q=UI.ql;const dv=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  return sheet('Quick log',`<p class="muted small" style="margin:0">One exercise per line, the way you'd write it: <span class="mono">Bench 135x8 135x8 135x7</span>. Also works: <span class="mono">Squat 3x5@225</span>, <span class="mono">Pull-ups BW x10 x8</span>, <span class="mono">Plank 60s 45s</span>. A date line like <span class="mono">Oct 28</span> starts a new workout. Weights are in ${wu()} unless you write kg or lb.</p>
+  <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end"><div class="field"><label class="label" for="qldate">Date</label><input type="date" class="input" id="qldate" data-in="qldate" value="${dv(Q.date)}" max="${dv(new Date())}"></div>
+  <button class="btn" data-a="qlPhoto" style="min-height:42px">📷 Import photo</button></div>
+  <input type="file" id="qlfile" accept="image/*" hidden>
+  <div id="qlocr" class="small" hidden></div>
+  <textarea class="input" id="qltext" data-in="qltext" rows="7" style="min-height:150px;font:14px/1.5 var(--f-mono)" placeholder="Bench 135x8 135x8 135x7&#10;Incline DB 50x10 50x10&#10;Pull-ups BW x10 x8 x7&#10;Lateral raise 20x15 20x15">${esc(Q.text)}</textarea>
+  <span class="label">Preview</span><div id="qlprev">${qlPreview()}</div>`,
+  `<button class="btn" data-a="closeSheet">Cancel</button><button class="btn primary" id="qlsave" data-a="qlSave" disabled>Save workout</button>`,{tall:true})}
+async function loadOCR(){if(window.Tesseract)return window.Tesseract;await new Promise((res,rej)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';sc.onload=res;sc.onerror=()=>rej(new Error('load'));document.head.appendChild(sc)});return window.Tesseract}
+function prepImage(file){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const max=1800;const k=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);const g=c.getContext('2d');g.drawImage(img,0,0,c.width,c.height);
+  const d=g.getImageData(0,0,c.width,c.height);const a=d.data;for(let i=0;i<a.length;i+=4){const y=.3*a[i]+.59*a[i+1]+.11*a[i+2];const v=y>150?255:y<90?0:Math.round((y-90)*255/60);a[i]=a[i+1]=a[i+2]=v}g.putImageData(d,0,0);c.toBlob(b=>res(b),'image/png')};img.onerror=()=>rej(new Error('image'));img.src=URL.createObjectURL(file)})}
+async function runOCR(file){const st=$('#qlocr');const show=t=>{if(st){st.hidden=false;st.innerHTML=t}};
+  try{show('Loading the text reader…');const T=await loadOCR();const blob=await prepImage(file);
+    const {data}=await T.recognize(blob,'eng',{logger:m=>{if(m.status==='recognizing text')show(`Reading your page… ${Math.round(m.progress*100)}%`)}});
+    const text=(data.text||'').split('\n').map(l=>l.trim()).filter(Boolean).join('\n');
+    if(!text){show('<span style="color:var(--danger)">Couldn\'t find any text in that photo. Try a sharper, well-lit, straight-on photo.</span>');return}
+    UI.ql.text=(UI.ql.text.trim()?UI.ql.text.trim()+'\n':'')+text;const ta=$('#qltext');if(ta)ta.value=UI.ql.text;qlRefresh();
+    show('Read the page into the box below. Check each line against your notebook and fix anything misread before saving.')}
+  catch(e){show(`<span style="color:var(--danger)">${framed?'Photo import works in the installed app (your GitHub link), not in this preview.':'Couldn\'t load the text reader. Check your internet connection and try again.'}</span>`)}}
 
 /* ---------- plan generator ---------- */
 const PAT={
@@ -2555,6 +2661,7 @@ function vToday(){
   <section class="block"><div class="row-between"><h2 class="h2">Start a routine</h2><a class="linkbtn" href="#routines">All routines</a></div>
   ${S.routines.length?`<div class="rgrid">${S.routines.slice(0,4).map(rCard).join('')}</div>`:`<div class="empty">No routines yet.<a class="btn sm" href="#routines">Create one</a></div>`}</section>
   ${last?`<section class="block"><h2 class="h2">Last workout</h2>${wCard(last)}</section>`:''}
+  <section class="block"><div class="hacts"><button class="btn" data-a="quickLog">✎ Quick log a past workout</button><button class="btn" data-a="quickLog" data-photo="1">📷 Import paper log</button></div></section>
   <section class="block"><h2 class="h2">Sets per muscle · last 7 days</h2><div class="panel">${muscleBars(7)}</div></section>`;
 }
 function rCard(r){
@@ -2564,10 +2671,13 @@ function rCard(r){
   ${miss?`<span class="muted small">${miss} exercise${miss>1?'s need':' needs'} equipment you haven't ticked</span>`:''}
   <div class="acts"><button class="btn primary sm" data-a="startRoutine" data-id="${r.id}">Start</button><button class="btn sm" data-a="editRoutine" data-id="${r.id}">Edit</button></div></div>`;
 }
+function lastLine(ae,i,e,prev){if(!prev)return '';const ws=prev.sets.filter(isWork);if(!ws.length)return '';
+  const d=new Date(prev.w.start);const ago=Math.round((Date.now()-prev.w.start)/DAY);const when=ago<=0?'today':ago===1?'yesterday':d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  return `<div class="lastline"><span class="lk">Last time · ${when}</span><span class="lv">${ws.map(x=>esc(fset(e,x))).join('<i>·</i>')}</span><button class="btn sm" data-a="matchLast" data-i="${i}" title="Copy last session into today's sets">Match</button></div>`}
 function wCard(w){
   const o=volOf(w);const groups=[];w.exercises.forEach(ae=>{const n=ae.sets.filter(s=>s.done&&isWork(s)).length;if(n)groups.push(`${n} × ${ex(ae.exId).name}`)});
   return `<button class="wcard" data-a="openWorkout" data-id="${w.id}"><div class="row-between"><span class="nm">${esc(w.name)}</span><span class="label">${fdate(w.start)}</span></div>
-  <div class="meta">${w.prog?`<span>W${w.prog.w} · D${w.prog.d+1}${w.deload?' · deload':''}</span>`:''}<span>${ft((w.end-w.start)/1000)}</span><span>${fvol(o.v)} ${wu()}</span><span>${o.n} sets</span>${w.prs&&w.prs.length?`<span class="pill pr">${w.prs.length} PR${w.prs.length>1?'s':''}</span>`:''}</div>
+  <div class="meta">${w.prog?`<span>W${w.prog.w} · D${w.prog.d+1}${w.deload?' · deload':''}</span>`:''}<span>${w.quick?'Quick log':ft((w.end-w.start)/1000)}</span><span>${fvol(o.v)} ${wu()}</span><span>${o.n} sets</span>${w.prs&&w.prs.length?`<span class="pill pr">${w.prs.length} PR${w.prs.length>1?'s':''}</span>`:''}</div>
   <div class="exs">${groups.slice(0,4).map(g=>`<span>${esc(g)}</span>`).join('')}${groups.length>4?`<span class="muted">+${groups.length-4} more</span>`:''}</div></button>`;
 }
 function vActive(){
@@ -2622,6 +2732,7 @@ function exCard(ae,i){
   ${sg?`<span class="muted small" style="margin-top:-4px">${esc(sg.why)}${sg.when!=='never'?` · last done ${esc(sg.when)}`:''}</span>`:''}
   ${(()=>{const ss=e.type==='wr'?exSessions(e.id,S.active.start):[];const pv=ss.length?Math.max(...ss.slice(-3).map(x=>x.perf)):0;const rt=S.active.rirT;
     return (pv||rt!=null)?`<span class="muted small mono" style="margin-top:-4px">${pv?`${perfLabel()} ${fwu(pv)}`:''}${pv&&rt!=null?' · ':''}${rt!=null?`Aim for ${rt} rep${rt===1?'':'s'} in reserve`:''}</span>`:''})()}
+  ${lastLine(ae,i,e,prev)}
   <input class="note" id="note-${i}" data-in="note" data-i="${i}" value="${esc(ae.notes||'')}" placeholder="Add a note (seat height, grip, cues…)">
   <div class="sets"><div class="srow head"><span>Set</span><span>Previous</span><span>${ins[0]?esc(ins[0][1]):''}</span><span>${esc(ins[1][1])}</span><span></span><span></span></div>${rows}</div>
   <div class="exc-acts"><button class="btn sm" data-a="addSet" data-i="${i}">+ Add set</button>${e.type==='wr'?`<button class="btn sm" data-a="addDrop" data-i="${i}" title="Add a set about 20% lighter, done straight after the last one">+ Drop set</button>`:''}<button class="btn sm" data-a="openWarm" data-i="${i}">${nW?'Edit warm-ups':'+ Warm-up sets'}</button></div></article>`;
@@ -2779,20 +2890,19 @@ function calendar(){
 }
 function vHistory(){
   const ws=sorted().reverse();
-  const head=`<span class="heyebrow" style="margin-top:6px">History</span><h1 class="h1" style="margin-top:-6px;text-transform:none;font-size:36px">Every session. Every rep.</h1>`;
-  if(!ws.length)return `${sampleBanner()}<section class="block">${head}
-  <div class="hempty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg><b>No workouts yet</b><p>Finish your first workout and it shows up here, on a calendar of every day you trained.</p><button class="btn primary" data-a="startEmpty">Start a workout</button></div></section>`;
   const now=new Date();const mStart=new Date(now.getFullYear(),now.getMonth(),1).getTime();
   const wk=new Date();wk.setHours(0,0,0,0);wk.setDate(wk.getDate()-((wk.getDay()+6)%7));
   const thisMonth=ws.filter(w=>w.start>=mStart).length,thisWeek=ws.filter(w=>w.start>=wk.getTime()).length,ds=dayStreak();
   let list='',cur='';ws.forEach(w=>{const m=new Date(w.start).toLocaleDateString(undefined,{month:'long',year:'numeric'});if(m!==cur){cur=m;list+=`<div class="mhead">${m}</div>`}list+=wCard(w)});
-  return `${sampleBanner()}<section class="block">${head}
+  return `${sampleBanner()}<section class="block"><span class="heyebrow" style="margin-top:6px">History</span><h1 class="h1" style="margin-top:-6px;text-transform:none;font-size:36px">Every session. Every rep.</h1>
+  <div class="hacts"><button class="btn" data-a="quickLog">✎ Quick log</button><button class="btn" data-a="quickLog" data-photo="1">📷 Import photo</button></div>
   ${weekCard()}
   <div class="hcard"><div class="htiles">
    <div class="htile amb"><span class="k">🔥 Streak</span><b>${ds}</b><span>day${ds===1?'':'s'} in a row</span></div>
    <div class="htile grn"><span class="k">This month</span><b>${thisMonth}</b><span>session${thisMonth===1?'':'s'}</span></div>
    <div class="htile vio"><span class="k">This week</span><b>${thisWeek}</b><span>session${thisWeek===1?'':'s'}</span></div></div></div>
-  ${calendar()}${list}</section>`;
+  ${calendar()}
+  ${ws.length?list:`<div class="hcard" style="justify-items:center;text-align:center;gap:8px;padding:26px 18px"><span class="heyebrow">Sessions</span><b style="font:700 22px var(--f-display)">No sessions logged yet</b><p class="muted small" style="margin:0;max-width:36ch">Finish a workout, type in a past one with Quick log, or photograph your paper log to bring your real numbers in.</p><div class="hacts" style="width:100%;max-width:360px"><button class="btn primary" data-a="startEmpty">Start a workout</button><button class="btn" data-a="quickLog">Quick log</button></div></div>`}</section>`;
 }
 const METRICS={wr:[['perf','Performance','w'],['e1','Est. 1RM','w'],['heavy','Heaviest','w'],['setVol','Best set volume','w'],['vol','Session volume','w'],['reps','Total reps','n']],r:[['maxReps','Most reps','n'],['reps','Total reps','n'],['heavy','Added weight','w']],t:[['time','Longest hold','t']],wt:[['time','Longest','t'],['heavy','Heaviest','w']],dt:[['dist','Distance','d'],['time','Duration','t']]};
 function fmtMetric(kind,v,short){if(kind==='w')return short?trimNum(round(v,1)):`${trimNum(round(v,1))} ${wu()}`;if(kind==='t')return ft(v);if(kind==='d')return short?trimNum(round(v,1)):`${trimNum(round(v,2))} ${du()}`;return `${Math.round(v)}`}
@@ -2852,7 +2962,7 @@ function vPrefs(){
    <div class="setrow"><div class="lbl"><b>Weekly workout goal</b><span>Shown with your streak. An active program sets this automatically.</span></div><select id="pfreq" class="input" style="width:auto" data-in="prof" data-k="freq"><option value="">Not set</option>${[1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${P.freq===n?'selected':''}>${n}× a week</option>`).join('')}</select></div>
   </div></section>
   <section class="block"><h2 class="h2">Training</h2><div class="panel">
-   <div class="setrow"><div class="lbl"><b>Recommendations</b><span>Suggested weights and reps for each set.</span></div><input type="checkbox" class="tgl" id="recs" data-in="recs" ${st.recs!==false?'checked':''}></div>
+   <div class="setrow"><div class="lbl"><b>Smart Weights</b><span>Pre-fills each set with your next target. It goes up by the right step for the lift (bigger for squats and deadlifts) once you hit the top of your rep range on every set, and holds if you miss.</span></div><input type="checkbox" class="tgl" id="recs" data-in="recs" ${st.recs!==false?'checked':''}></div>
    <div class="setrow"><div class="lbl"><b>Reference workout</b><span>Which past session the "Previous" column and suggestions compare to.</span></div><select id="refsel" class="input" style="width:auto" data-in="ref"><option value="exercise" ${st.ref!=='planday'?'selected':''}>Last time I did the exercise</option><option value="planday" ${st.ref==='planday'?'selected':''}>Same plan day</option></select></div>
    <div class="setrow"><div class="lbl"><b>Performance metric</b><span>How strength is measured on charts and records.</span></div><select id="perfsel" class="input" style="width:auto" data-in="perf">${Object.entries(PERF).map(([k,[l]])=>`<option value="${k}" ${st.perf===k?'selected':''}>${l.replace('Est. ','')}</option>`).join('')}</select></div>
    <div class="setrow"><div class="lbl"><b>Track RIR</b><span>Rate working sets by reps in reserve in every workout, not just plans that use it.</span></div><input type="checkbox" class="tgl" id="rirset" data-in="rirset" ${st.rir?'checked':''}></div>
@@ -2880,7 +2990,7 @@ function sheet(title,body,foot,o={}){const back=UI.sheet&&UI.sheet.back;return `
 function renderSheet(){
   const s=UI.sheet;const el=$('#sheet');if(!s){el.innerHTML='';document.body.style.overflow='';return}
   document.body.style.overflow='hidden';
-  const fns={picker:shPicker,exMenu:shExMenu,workout:shWorkout,exercise:shExercise,summary:shSummary,confirm:shConfirm,export:shExport,import:shImport,custom:shCustom,bar:shBar,warm:shWarm};
+  const fns={quick:shQuick,picker:shPicker,exMenu:shExMenu,workout:shWorkout,exercise:shExercise,summary:shSummary,confirm:shConfirm,export:shExport,import:shImport,custom:shCustom,bar:shBar,warm:shWarm};
   el.innerHTML=fns[s.kind](s);
 }
 function shPicker(){
@@ -3063,6 +3173,19 @@ const A={
   ssLeave(d){S.active.exercises[d.i].ss=null;cleanSS();save();UI.sheet=null;render()},
   cycleType(d){const s=S.active.exercises[d.i].sets[d.j];const order=['N','W','D','F'];s.type=order[(order.indexOf(s.type)+1)%4];save();render()},
   delSet(d){S.active.exercises[d.i].sets.splice(+d.j,1);save();render()},
+  quickLog(d){const now=new Date();UI.ql={text:'',date:new Date(now.getFullYear(),now.getMonth(),now.getDate(),12),parsed:[],picks:[]};UI.sheet={kind:'quick'};renderSheet();if(d&&d.photo)setTimeout(()=>A.qlPhoto(),50)},
+  qlPhoto(){const f=$('#qlfile');if(!f)return;f.onchange=()=>{if(f.files[0])runOCR(f.files[0]);f.value=''};f.click()},
+  qlSave(){const Q=UI.ql;qlRefresh();let n=0,firstId=null;
+    Q.parsed.forEach(w=>{const items=w.items.filter(i=>i.id&&i.sets.length);if(!items.length)return;
+      const start=w.date.getTime();const wk={id:uid(),name:w.title||'Logged workout',start,end:start,quick:true,exercises:items.map(it=>{const e=ex(it.id);return {exId:it.id,notes:'',repMin:prefsFor(it.id).repMin,repMax:prefsFor(it.id).repMax,sets:it.sets.map(st=>qlSetFor(e,st))}})};
+      wk.prs=findPRs(wk,sorted().filter(x=>x.start<start));S.workouts.push(wk);n++;if(!firstId)firstId=wk.id});
+    if(!n){toast('Nothing to save yet');return}
+    save();UI.sheet=null;if(location.hash!=='#history')location.hash='#history';else render();toast(n>1?`${n} workouts added to your history`:'Workout added to your history')},
+  matchLast(d){const a=S.active;const ae=a.exercises[d.i];const prev=lastSession(ae.exId,a.start);if(!prev)return;
+    const pw=prev.sets.filter(isWork);let work=ae.sets.filter(isWork).filter(s=>!s.done);
+    while(ae.sets.filter(isWork).length<pw.length){ae.sets.push({type:'N',w:null,r:null,t:null,d:null,done:false})}
+    let k=0;ae.sets.forEach(s=>{if(!isWork(s))return;const p=pw[k++];if(!p||s.done)return;['w','r','t','d'].forEach(f=>{s[f]=p[f]??null});if(p.type==='D'||p.type==='F')s.type=p.type});
+    save();render();toast('Matched last time. Beat any set by typing over it')},
   usePrev(d){const a=S.active;const ae=a.exercises[d.i];const p=prevFor(ae,+d.j,lastSession(ae.exId,a.start));if(!p)return;const s=ae.sets[d.j];['w','r','t','d'].forEach(k=>{if(p[k]!=null)s[k]=p[k]});save();render()},
   toggleDone(d){
     const a=S.active;const ae=a.exercises[d.i];const s=ae.sets[d.j];const e=ex(ae.exId);
@@ -3221,6 +3344,9 @@ document.addEventListener('input',ev=>{
       break}
     case 'note':S.active.exercises[d.i].notes=v;save();break;
     case 'rname':UI.editing.name=v;break;
+    case 'qltext':UI.ql.text=v;clearTimeout(UI.qlT);UI.qlT=setTimeout(qlRefresh,180);break;
+    case 'qldate':{const m=v.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m){UI.ql.date=new Date(+m[1],m[2]-1,+m[3],12);qlRefresh()}break}
+    case 'qlpick':{UI.ql.picks=(UI.ql.picks||[]).filter(p=>!(p[0]==d.w&&p[1]==d.k));UI.ql.picks.push([+d.w,d.k,v]);qlRefresh();break}
     case 'pname':UI.editProg.name=v;break;
     case 'wizbw':UI.wiz.prof.bw=fromD(pnum(v));break;
     case 'wizname':UI.wiz.o.name=v;break;
