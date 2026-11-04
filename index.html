@@ -3595,6 +3595,9 @@ setTimeout(()=>{try{recoverFromMirror().catch(()=>{});askPersist()}catch(e){}},3
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&S){try{idbSet('state',JSON.stringify(S))}catch(e){}}});
 })();
 </script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+<script>if('serviceWorker' in navigator&&location.protocol==='https:'){
+let had=!!navigator.serviceWorker.controller,done=false;
+navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}had=true});
+addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{const up=()=>r.update().catch(()=>{});up();document.addEventListener('visibilitychange',()=>{if(!document.hidden)up()})}).catch(()=>{}))}</script>
 </body>
 </html>
