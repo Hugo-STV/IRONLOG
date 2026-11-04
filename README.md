@@ -24,10 +24,11 @@ A free, private workout tracker inspired by Hevy and Alpha Progress. It runs ent
 **Progress**
 - **Weight suggestions** for every set: double progression inside your rep range, an increase when sets felt easy (RIR 3+), a 10% reset after two misses, and starting estimates from your profile for exercises you've never done.
 - **Performance metric** of your choice (1RM, 3RM, 5RM, 8RM, 10RM or 12RM estimate) on charts and records, and a **reference workout** setting (last time you did the exercise, or the same plan day).
+- **Muscle map and balance chart**: a front-and-back body map that lights up each muscle by this week's sets (tap one for details), a 30-day radar of every muscle group, and "where to focus" lists with suggested exercises and a one-tap workout builder.
 - **Workout streaks** (weeks in a row), weekly goal, personal records, weekly sets per muscle, body-weight log, training calendar.
 - Works offline, installs to your home screen, JSON backup.
 
-**Credits.** Exercise illustrations (the `ill/` folder) are from [Everkinetic](https://github.com/everkinetic/data), licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); they were cropped and converted to WebP. Exercise photos and steps come from the public-domain [free-exercise-db](https://github.com/yuhonas/free-exercise-db).
+**Credits.** Exercise illustrations (the `ill/` folder) are from [Everkinetic](https://github.com/everkinetic/data), licensed [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); they were cropped and converted to WebP. Exercise photos and steps come from the public-domain [free-exercise-db](https://github.com/yuhonas/free-exercise-db). Body-map outlines are adapted from [react-body-highlighter](https://github.com/giavinh79/react-body-highlighter) (MIT).
 
 ## Put it on GitHub Pages (5 minutes, free)
 
@@ -45,7 +46,7 @@ Browser storage can be wiped if you clear site data or uninstall the browser. Ev
 
 ## Updating the app
 
-Edit `index.html` in GitHub (pencil icon) or upload a new version. If your phone still shows the old version, close and reopen the app once; the offline cache refreshes in the background. To force it, bump `CACHE='ironlog-v6'` to `v7` in `sw.js`.
+Edit `index.html` in GitHub (pencil icon) or upload a new version. If your phone still shows the old version, close and reopen the app once; the offline cache refreshes in the background. To force it, bump the number in `CACHE='ironlog-v9'` in `sw.js`.
 
 ## Notes
 

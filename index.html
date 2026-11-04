@@ -367,6 +367,24 @@ textarea.input{min-height:140px;font:12px/1.4 var(--f-mono)}
 .heyebrow{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
 .hcard{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;display:grid;gap:12px}
 .hcard h2{font:700 26px/1.1 var(--f-display);letter-spacing:.01em;margin:0}
+.hsub{margin:-4px 0 0;color:var(--muted);font-size:14px;line-height:1.45}.hsub b{color:var(--ink)}
+.hstack{display:grid;gap:14px}
+.bmaps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}.bmaps figure{margin:0;display:grid;justify-items:center;gap:4px}.bmaps figcaption{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.bmap{width:100%;max-width:170px;height:auto;display:block}
+.bmap polygon{stroke:var(--surface);stroke-width:.6;stroke-linejoin:round}
+.bm-x{fill:color-mix(in srgb,var(--muted) 14%,var(--surface))}.bm{cursor:pointer;transition:fill-opacity .2s}
+.bm.l0{fill:color-mix(in srgb,var(--muted) 26%,var(--surface))}.bmleg .l0{background:color-mix(in srgb,var(--muted) 26%,var(--surface));opacity:1}
+.bm.l1,.bm.l2,.bm.l3,.bm.l4{fill:var(--accent)}.bm.l1{fill-opacity:.4}.bm.l2{fill-opacity:.62}.bm.l3{fill-opacity:.84}.bm.l4{fill-opacity:1}
+.bm:hover{stroke:var(--ink)}
+.bmleg{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:12px;color:var(--muted)}.bmleg span{display:flex;align-items:center;gap:5px}.bmleg i{width:12px;height:12px;border-radius:3px;background:var(--accent)}
+.bmleg .l1{opacity:.4}.bmleg .l2{opacity:.62}.bmleg .l3{opacity:.84}
+.radar{position:relative;width:100%;max-width:340px;margin:4px auto;aspect-ratio:1}.radar svg{position:absolute;inset:0;width:100%;height:100%}
+.rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
+.rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
+.fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
+.fx-h{display:flex;gap:10px;align-items:center}.fx-h>div{display:grid}
+.fx-bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}.fx-bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.fx-ex{display:flex;flex-wrap:wrap;gap:6px}
 .wkdots7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
 .wkdots7 span{font:600 11px var(--f-body);color:var(--muted);letter-spacing:.06em}
 .wkdots7 i{justify-self:center;width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:block}
@@ -472,6 +490,7 @@ textarea.input{min-height:140px;font:12px/1.4 var(--f-mono)}
 @media (max-width:380px){.srow{grid-template-columns:32px minmax(0,1fr) 58px 52px 36px 20px;gap:4px}.stats b{font-size:18px}.brand{font-size:22px}.unit button{padding:7px 8px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+
 
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -2677,6 +2696,89 @@ function muscleBars(days){
   <p class="muted small" style="margin:0">Shaded band = 10–20 working sets per week, a common range for muscle growth. Warm-ups don't count.</p>`;
 }
 
+
+/* ---------- muscle map (week) + radar (month) ---------- */
+/* Body outlines adapted from react-body-highlighter (MIT, github.com/giavinh79/react-body-highlighter) */
+const BODY={"a":[["chest",["51.8 41.6 51 55.1 58 58 67.8 55.5 70.6 47.3 62 41.6","29.8 46.5 31.4 55.5 40.8 58 48.2 55.1 47.8 42 37.6 42"]],["obliques",["68.6 63.3 67.3 57.1 58.8 59.6 60 64.1 60.4 83.3 65.7 78.8 66.5 69.8","33.9 78.4 33.1 71.8 31 63.3 32.2 57.1 40.8 59.2 39.2 63.3 39.2 83.7"]],["abs",["56.3 59.2 58 64.1 58.4 78 58.4 92.7 56.3 98.4 55.1 104.1 51.4 107.8 51 84.5 50.6 67.3 51 57.1","43.7 58.8 48.6 57.1 49 67.3 48.6 84.5 48.2 107.3 44.5 103.7 40.8 91.4 40.8 78.4 41.2 64.5"]],["biceps",["16.7 68.2 18 71.4 22.9 66.1 29 53.9 27.8 49.4 20.4 55.9","71.4 49.4 70.2 54.7 76.3 66.1 81.6 71.8 82.9 69 78.8 55.5"]],["triceps",["69.4 55.5 69.4 61.6 75.9 72.7 77.6 70.2 75.5 67.3","22.4 69.4 29.8 55.5 29.8 60.8 22.9 73.1"]],["neck",["55.5 23.7 50.6 33.5 50.6 39.2 61.6 40 70.6 44.9 69.4 36.7 63.3 35.1 58.4 30.6","29 44.9 30.2 37.1 36.3 35.1 41.2 30.2 44.5 24.5 49 33.9 48.6 39.2 38 39.6"]],["front-deltoids",["78.4 53.1 79.6 47.8 79.2 41.2 75.9 38 71 36.3 72.2 42.9 71.4 47.3","28.2 47.3 21.2 53.1 20 47.8 20.4 40.8 24.5 37.1 28.6 37.1 26.9 43.3"]],["head",["42.4 2.9 40 11.8 42 19.6 46.1 23.3 49.8 25.3 54.7 22.4 57.6 19.2 59.2 10.2 57.1 2.4 49.8 0"]],["abductors",["52.7 110.2 54.3 124.9 60 110.2 62 100 64.9 94.3 60 92.7 56.7 104.5","47.8 110.6 44.9 125.3 42 115.9 40.4 113.1 39.6 107.3 38 102.4 34.7 93.9 39.6 92.2 41.6 99.2 43.7 105.3"]],["quadriceps",["34.7 98.8 37.1 108.2 37.1 127.8 34.3 137.1 31 132.7 29.4 120 28.2 111.4 29.4 100.8 32.2 94.7","63.3 105.7 64.5 100 66.9 94.7 70.2 101.2 71 111.8 68.2 133.1 65.3 137.6 62.4 128.6 62 111.4","38.8 129.4 38.4 112.2 41.2 118.4 44.5 129.4 42.9 135.1 40 146.1 36.3 146.5 35.5 140","59.6 145.7 55.5 129 60.8 113.9 61.2 130.2 64.1 139.6 62.9 146.5","32.7 138.4 26.5 145.7 25.7 136.7 25.7 127.3 26.9 114.3 29.4 133.5","71.8 113.1 73.9 124.1 73.9 140.4 72.7 145.7 66.5 138.4 70.2 133.5"]],["knees",["33.9 140 34.7 143.3 35.5 147.3 36.3 151 35.1 156.7 29.8 156.7 27.3 152.7 27.3 147.3 30.2 144.1","65.7 140 72.2 147.8 72.2 152.2 69.8 157.1 64.9 156.7 62.9 151"]],["calves",["71.4 160.4 73.5 153.5 76.7 161.2 79.6 167.8 78.4 187.8 79.6 195.5 74.7 195.5","24.9 194.7 27.8 164.9 28.2 160.4 26.1 154.3 24.9 157.6 22.4 161.6 20.8 167.8 22 188.2 20.8 195.5","72.7 195.1 69.8 159.2 65.3 158.4 64.1 162.4 64.1 165.3 65.7 177.1","35.5 158.4 35.9 162.4 35.9 166.9 35.1 172.2 35.1 176.7 32.2 182 30.6 187.3 26.9 194.7 27.3 187.8 28.2 180.4 28.6 175.5 29 169.8 29.8 164.1 30.2 158.8"]],["forearm",["6.1 88.6 10.2 75.1 14.7 70.2 16.3 74.3 19.2 73.5 4.5 97.6 0 100","84.5 69.8 83.3 73.5 80 73.1 95.1 98.4 100 100.4 93.5 89.4 89.8 76.3","77.6 72.2 77.6 77.6 80.4 84.1 85.3 89.8 92.2 101.2 94.7 99.6","6.9 101.2 13.5 90.6 18.8 84.1 21.6 77.1 21.2 71.8 4.9 98.8"]]],"p":[["head",["50.6 0 46 0.9 40.9 5.5 40.4 12.8 45.1 20 55.7 20 59.1 13.6 59.6 4.7 55.7 1.3"]],["trapezius",["44.7 21.7 47.7 21.7 47.2 38.3 47.7 64.7 38.3 53.2 35.3 40.9 31.1 36.6 39.1 33.2 43.8 27.2","52.3 21.7 55.7 21.7 56.6 27.2 60.9 32.8 68.9 36.6 64.7 40.4 61.7 53.2 52.3 64.7 53.2 38.3"]],["back-deltoids",["29.4 37 23 39.1 17.4 44.3 18.3 53.6 24.3 49.4 27.2 46.4","71.1 37 78.3 39.6 82.6 44.7 81.7 53.6 74.9 48.9 72.3 45.1"]],["upper-back",["31.1 38.7 28.1 48.9 28.5 55.3 34 75.3 47.2 71.1 47.2 66.4 36.6 54 33.6 41.3","68.9 38.7 71.9 49.4 71.5 56.2 66 75.3 52.8 71.1 52.8 66.4 63.4 54.5 66.4 41.7"]],["triceps",["26.8 49.8 17.9 55.7 14.5 72.3 16.6 81.7 21.7 63.8 26.8 55.7","73.6 50.2 82.1 55.7 86 73.2 83.4 82.1 77.9 63 73.2 55.7","26.8 58.3 26.8 68.5 23 75.3 19.1 77.4 22.6 65.5","72.8 58.3 77 64.7 80.4 77.4 76.6 75.3 72.8 68.9"]],["lower-back",["47.7 72.8 34.5 77 35.3 83.4 49.4 102.1 46.8 83","52.3 72.8 65.5 77 64.7 83.4 50.6 102.1 53.2 83.8"]],["forearm",["86.4 75.7 91.1 83.4 93.2 94 100 106.4 96.2 104.3 88.1 89.4 84.3 83.8","13.6 75.7 8.9 83.8 6.8 93.6 0 106.4 3.8 104.3 12.3 88.5 15.7 83","81.3 79.6 77.4 77.9 79.1 84.7 91.1 103.8 93.2 108.9 94.5 104.7","18.7 79.6 22.1 77.9 20.9 84.3 9.4 103 6.8 108.5 5.1 104.7"]],["gluteal",["44.7 99.6 30.2 108.5 29.8 118.7 31.5 126 47.2 121.3 49.4 114.9","55.3 99.1 51.1 114.5 52.3 120.9 68.1 126 69.8 119.1 69.4 108.5"]],["adductor",["48.1 123 44.7 123 41.3 125.5 45.1 144.3 48.5 135.7 48.9 129.4","51.9 122.6 55.7 123.4 59.1 126 54.9 144.3 51.9 136.2 51.1 129.4"]],["hamstring",["28.9 122.1 31.1 129.4 36.6 126 35.3 135.3 34.5 150.2 29.4 158.3 28.9 146.8 27.7 141.3 27.2 131.5","71.5 121.7 69.4 128.9 63.8 126 65.5 136.6 66.4 150.2 71.1 158.3 71.5 147.7 72.8 142.1 73.6 131.9","38.7 125.5 44.3 146 40.4 166.8 36.2 152.8 37 135.3","61.7 125.5 63.4 136.2 64.3 153.2 60 166.8 56.2 146.4"]],["knees",["34.5 153.2 31.1 159.1 33.6 166.4 37.4 162.6","66.4 153.6 63 163 66.8 166.4 69.4 159.1"]],["calves",["29.4 160.4 28.5 167.2 24.7 179.6 23.8 192.8 25.5 197 28.5 193.2 29.8 180 31.9 171.1 31.9 166.8","37.4 165.1 35.3 167.7 33.2 171.9 31.1 180.4 30.2 191.9 34 200 38.7 190.6 39.1 168.9","63 165.1 61.3 168.5 61.7 190.6 66.4 199.6 70.6 191.9 68.9 179.6 66.8 170.2","70.6 160.4 72.3 168.5 75.7 179.1 76.6 192.8 74.5 196.6 72.3 193.6 70.6 179.6 68.1 168.1"]],["left-soleus",["28.5 195.7 30.2 195.7 33.6 201.7 30.6 220 28.5 213.6 26.8 198.3"]],["right-soleus",["69.8 195.7 71.9 195.7 73.6 198.3 71.9 213.2 70.2 219.6 67.2 202.1"]]]};
+const REG_FM={chest:['chest'],'front-deltoids':['frontdelts','sidedelts'],'back-deltoids':['reardelts','sidedelts'],trapezius:['traps'],'upper-back':['upperback','lats'],'lower-back':['lowerback'],biceps:['biceps'],triceps:['triceps'],forearm:['forearms'],abs:['abs'],obliques:['abs'],quadriceps:['quads'],hamstring:['hams'],gluteal:['glutes'],abductors:['abductors'],adductor:['adductors'],calves:['calves'],'left-soleus':['calves'],'right-soleus':['calves']};
+function secOf(e){const n=e.name.toLowerCase(),f=e.fm;if(e.type!=='wr'&&e.type!=='r')return [];
+  if(f==='chest'){if(/fly|flye|crossover|pec deck/.test(n))return ['frontdelts'];return ['triceps','frontdelts']}
+  if(f==='frontdelts'&&/press|push/.test(n))return ['triceps','sidedelts'];
+  if(f==='sidedelts'&&/upright/.test(n))return ['traps'];
+  if(f==='lats')return /pullover|straight-arm/.test(n)?[]:['biceps','upperback'];
+  if(f==='upperback')return /shrug/.test(n)?[]:['biceps','reardelts','lats'];
+  if(f==='lowerback')return /deadlift|rack pull|block pull/.test(n)?['glutes','hams','traps','forearms']:['glutes','hams'];
+  if(f==='quads'){if(/extension|sissy/.test(n))return [];return /squat|lunge|split|step|press|pistol|thruster/.test(n)?['glutes','adductors']:[]}
+  if(f==='hams')return /deadlift|rdl|good morning|swing/.test(n)?['glutes','lowerback']:[];
+  if(f==='glutes')return /thrust|bridge|squat|lunge|step|deadlift/.test(n)?['hams','quads']:[];
+  if(f==='triceps'&&/dip|close-grip|close grip|press/.test(n))return ['chest','frontdelts'];
+  if(f==='biceps')return ['forearms'];
+  if(f==='traps')return ['forearms'];
+  return []}
+function muscleSets(since,until){const c={},by={};
+  S.workouts.forEach(w=>{if(w.start<since||(until&&w.start>=until))return;w.exercises.forEach(ae=>{const n=ae.sets.filter(s=>s.done&&isWork(s)).length;if(!n)return;const e=ex(ae.exId);if(!e||!e.fm)return;
+    const add=(m,v)=>{if(!FM_LABEL[m]||m==='full'||m==='cardio'||m==='mobility')return;c[m]=(c[m]||0)+v;(by[m]=by[m]||{})[e.id]=(by[m][e.id]||0)+v};
+    if(e.fm==='full'){['quads','glutes','upperback','frontdelts','abs'].forEach(m=>add(m,n*.5));return}
+    add(e.fm,n);secOf(e).forEach(m=>add(m,n*.5))})});
+  return {c,by}}
+const lvl=v=>!v?0:v<4?1:v<8?2:v<12?3:4;
+const fmtS=v=>trimNum(Math.round(v*2)/2);
+function bodyFigSvg(view,c,label){
+  return `<svg class="bmap" viewBox="0 0 100 200" role="img" aria-label="${label}">${BODY[view].map(([m,ps])=>{const fms=REG_FM[m];
+    if(!fms)return ps.map(p=>`<polygon class="bm-x" points="${p}"/>`).join('');
+    const v=Math.max(...fms.map(k=>c[k]||0));
+    return ps.map(p=>`<polygon class="bm l${lvl(v)}" points="${p}" data-a="muscleInfo" data-r="${m}"><title>${esc(fms.map(k=>FM_LABEL[k]).join(' / '))}: ${fmtS(v)} sets</title></polygon>`).join('')}).join('')}</svg>`}
+function bodyMapCard(){
+  const {c}=muscleSets(weekStart(Date.now()));const keys=Object.keys(c);const total=keys.reduce((a,k)=>a+c[k],0);
+  const top=keys.sort((a,b)=>c[b]-c[a])[0];
+  return `<div class="hcard"><span class="heyebrow">This week</span><h2>${keys.length?`${keys.length} muscle${keys.length>1?'s':''} trained`:'Explore the muscles you train'}</h2>
+  <p class="hsub">${keys.length?`<b>${fmtS(total)}</b> sets so far · most on <b>${FM_LABEL[top]}</b>. Tap a muscle for details.`:'Muscles light up as you log sets this week. Tap one for details.'}</p>
+  <div class="bmaps"><figure>${bodyFigSvg('a',c,'Front muscles this week')}<figcaption>Front</figcaption></figure><figure>${bodyFigSvg('p',c,'Back muscles this week')}<figcaption>Back</figcaption></figure></div>
+  <div class="bmleg"><span><i class="l0"></i>0</span><span><i class="l1"></i>1–3</span><span><i class="l2"></i>4–7</span><span><i class="l3"></i>8–11</span><span><i class="l4"></i>12+ sets</span></div>
+  <button class="btn wide" data-a="focus" data-p="week">See where to focus this week</button></div>`}
+const RADAR=[['Chest',['chest'],'chest'],['Shoulders',['frontdelts','sidedelts','reardelts'],'sidedelts'],['Upper back',['upperback','traps'],'upperback'],['Lats',['lats'],'lats'],['Biceps',['biceps'],'biceps'],['Triceps',['triceps'],'triceps'],['Forearms',['forearms'],'forearms'],['Core',['abs','lowerback'],'abs'],['Glutes',['glutes','abductors'],'glutes'],['Quads',['quads','adductors'],'quads'],['Hamstrings',['hams'],'hams'],['Calves',['calves'],'calves']];
+function radarCard(){
+  const {c}=muscleSets(Date.now()-30*DAY);const vals=RADAR.map(([,fms])=>fms.reduce((a,k)=>a+(c[k]||0),0));
+  const mx=Math.max(20,...vals);const N=RADAR.length,R=35,cx=50,cy=50;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/N;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]};
+  const ring=f=>RADAR.map((_,i)=>pt(i,R*f).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const poly=vals.map((v,i)=>pt(i,R*Math.max(.04,v/mx)).map(x=>x.toFixed(1)).join(',')).join(' ');
+  const any=vals.some(v=>v>0);
+  const lowest=focusList('month').slice(0,2).map(x=>FM_LABEL[x.k]);
+  const icons=RADAR.map(([l,,ic],i)=>{const [x,y]=pt(i,R+9);return `<span class="rd-ic" style="left:${x}%;top:${y}%" title="${l}: ${fmtS(vals[i])} sets">${mth(ic,'mth')}</span>`}).join('');
+  return `<div class="hcard"><span class="heyebrow">This month</span><h2>${any?'Identify areas that need more focus':'Your training balance'}</h2>
+  <p class="hsub">${any?`Last 30 days. Least trained: <b>${lowest.join('</b> and <b>')}</b>.`:'Log a few workouts and this chart shows which muscle groups get the most and least work.'}</p>
+  <div class="radar"><svg viewBox="0 0 100 100" aria-label="Sets per muscle group, last 30 days">
+  ${[.25,.5,.75,1].map(f=>`<polygon class="rd-g" points="${ring(f)}"/>`).join('')}
+  ${RADAR.map((_,i)=>{const [x,y]=pt(i,R);return `<line class="rd-g" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`}).join('')}
+  ${any?`<polygon class="rd-v" points="${poly}"/>${vals.map((v,i)=>{const [x,y]=pt(i,R*Math.max(.04,v/mx));return `<circle class="rd-d" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="1.1"/>`}).join('')}`:''}
+  </svg>${icons}</div>
+  <button class="btn wide" data-a="focus" data-p="month">See where to focus more</button></div>`}
+function focusPicks(fm,n){const U=usage();return Object.values(EXM).filter(e=>e.fm===fm&&available(e)&&(e.type==='wr'||e.type==='r'))
+  .sort((a,b)=>((U[b.id]||0)-(U[a.id]||0))||((CORE.has(b.id)?1:0)-(CORE.has(a.id)?1:0))||(a.name.length-b.name.length)).slice(0,n)}
+function focusList(per){
+  const wk=per==='week';const since=wk?weekStart(Date.now()):Date.now()-30*DAY;const {c}=muscleSets(since);
+  const tgt=wk?10:40;const ks=Object.keys(FM_LABEL).filter(k=>!['full','cardio','mobility','abductors','adductors'].includes(k));
+  return ks.map(k=>({k,v:c[k]||0})).sort((a,b)=>a.v-b.v).map(x=>({...x,gap:Math.max(0,tgt-x.v)}))}
+function shFocus(s){
+  const wk=s.p==='week';const L=focusList(s.p);const need=L.filter(x=>x.gap>0);const ok=L.filter(x=>!x.gap);
+  const tgt=wk?10:40;const days=wk?((new Date().getDay()+6)%7)+1:30;
+  const row=x=>{const picks=focusPicks(x.k,3);return `<div class="fx"><div class="fx-h">${mth(x.k)}<div><b>${FM_LABEL[x.k]}</b><span class="muted small">${fmtS(x.v)} of ${tgt} sets${x.gap?` · ${fmtS(x.gap)} to go`:' · on track'}</span></div></div>
+    <div class="fx-bar"><i style="width:${Math.min(100,x.v/tgt*100)}%"></i></div>
+    ${picks.length?`<div class="fx-ex">${picks.map(e=>`<button class="chip" data-a="openEx" data-id="${e.id}">${esc(e.name)}</button>`).join('')}</div>`:''}</div>`};
+  const pickIds=need.slice(0,4).map(x=>focusPicks(x.k,1)[0]).filter(Boolean).map(e=>e.id);
+  return sheet(wk?'Focus this week':'Focus this month',
+  `<p class="muted small" style="margin:0 0 4px">${wk?`Day ${days} of 7.`:'Last 30 days.'} Target: about ${tgt} working sets per muscle ${wk?'each week':'per month (10 a week)'}, a common range for growth. Compound lifts count half a set for helper muscles.</p>
+  ${need.length?`<div class="label" style="margin-top:6px">Needs more work</div>${need.map(row).join('')}`:'<p>Every muscle group is on target. Nice work.</p>'}
+  ${ok.length?`<div class="label" style="margin-top:10px">On track</div>${ok.map(row).join('')}`:''}`,
+  pickIds.length?`<button class="btn primary wide" data-a="focusBuild" data-ids="${pickIds.join(',')}">${S.active?'Add these to my workout':'Build a workout from these'} · ${pickIds.length}</button>`:'',{tall:true})}
+function shMuscle(s){
+  const fms=REG_FM[s.r]||[];const {c,by}=muscleSets(weekStart(Date.now()));
+  return sheet(fms.map(k=>FM_LABEL[k]).join(' & '),fms.map(k=>{const done=Object.entries(by[k]||{}).sort((a,b)=>b[1]-a[1]);const picks=focusPicks(k,3);
+    return `<div class="fx"><div class="fx-h">${mth(k)}<div><b>${FM_LABEL[k]}</b><span class="muted small">${fmtS(c[k]||0)} sets this week</span></div></div>
+    <div class="fx-bar"><i style="width:${Math.min(100,(c[k]||0)/10*100)}%"></i></div>
+    ${done.length?`<div class="list">${done.map(([id,v])=>`<button class="li" data-a="openEx" data-id="${id}">${mth(ex(id).fm)}<div><div class="t1">${esc(ex(id).name)}</div><div class="t2">${fmtS(v)} set${v===1?'':'s'}${ex(id).fm!==k?' (helper muscle, counts half)':''}</div></div></button>`).join('')}</div>`:`<span class="muted small">Not trained yet this week. Try:</span><div class="fx-ex">${picks.map(e=>`<button class="chip" data-a="openEx" data-id="${e.id}">${esc(e.name)}</button>`).join('')}</div>`}</div>`}).join(''),'',{})}
+
 /* ---------- views ---------- */
 function render(){
   USE=null;const v=UI.view;
@@ -2991,7 +3093,7 @@ function vProgress(){
     <div class="list">${sess.slice(-6).reverse().map(s=>`<button class="li" data-a="openWorkout" data-id="${s.wid}"><div><div class="t1">${fdate(s.t)}</div><div class="t2">${s.sets.map(x=>fset(e,x)).join('  ·  ')}</div></div><span class="r">${e.type==='wr'?'1RM '+fw(s.e1):''}</span></button>`).join('')}</div>`;
   } else body=`<div class="empty">Log a workout and your charts will appear here.</div>`;
   const bw=S.bw.slice().sort((a,b)=>a.t-b.t);
-  return `${sampleBanner()}<section class="block"><h1 class="h1">Progress</h1>${body}</section>
+  return `${sampleBanner()}<section class="block"><h1 class="h1">Progress</h1><div class="hstack">${bodyMapCard()}${radarCard()}</div></section><section class="block"><h2 class="h2">Exercise progress</h2>${body}</section>
   <section class="block"><h2 class="h2">Sets per muscle · last 7 days</h2><div class="panel">${muscleBars(7)}</div></section>
   <section class="block"><h2 class="h2">Body weight</h2>
   <div class="panel" style="display:grid;gap:10px">${lineChart(bw.map(b=>({x:b.t,y:toD(b.kg)})),(v,s)=>s?trimNum(round(v,1)):`${trimNum(round(v,1))} ${wu()}`)}
@@ -3054,7 +3156,7 @@ function sheet(title,body,foot,o={}){const back=UI.sheet&&UI.sheet.back;return `
 function renderSheet(){
   const s=UI.sheet;const el=$('#sheet');if(!s){el.innerHTML='';document.body.style.overflow='';return}
   document.body.style.overflow='hidden';
-  const fns={quick:shQuick,picker:shPicker,exMenu:shExMenu,workout:shWorkout,exercise:shExercise,summary:shSummary,confirm:shConfirm,export:shExport,import:shImport,custom:shCustom,bar:shBar,warm:shWarm};
+  const fns={quick:shQuick,picker:shPicker,exMenu:shExMenu,workout:shWorkout,exercise:shExercise,summary:shSummary,confirm:shConfirm,export:shExport,import:shImport,custom:shCustom,bar:shBar,warm:shWarm,focus:shFocus,muscle:shMuscle};
   el.innerHTML=fns[s.kind](s);
 }
 function shPicker(){
@@ -3299,7 +3401,10 @@ const A={
     save();UI.sheet=null;render();toast({discard:'Workout discarded',delRoutine:'Routine deleted',delWorkout:'Workout deleted',reset:'Everything erased',delProgram:'Program deleted',resetProgram:'Progress reset'}[d.what]);
   },
   openWorkout(d){UI.sheet={kind:'workout',id:d.id};renderSheet()},
-  openEx(d){const back=UI.sheet&&(UI.sheet.kind==='picker'||UI.sheet.kind==='exMenu')?UI.sheet:null;UI.sheet={kind:'exercise',id:d.id,back};renderSheet()},
+  focus(d){UI.sheet={kind:'focus',p:d.p};renderSheet()},
+  muscleInfo(d){UI.sheet={kind:'muscle',r:d.r};renderSheet()},
+  focusBuild(d){const ids=d.ids.split(',').filter(id=>EXM[id]);A.pick({mode:S.active?'active':'new'});UI.picker.sel=ids;renderSheet()},
+  openEx(d){const back=UI.sheet&&['picker','exMenu','focus','muscle'].includes(UI.sheet.kind)?UI.sheet:null;UI.sheet={kind:'exercise',id:d.id,back};renderSheet()},
   viewProgress(d){UI.progEx=d.id;UI.progMetric=null;UI.sheet=null;if(location.hash==='#progress')render();else location.hash='#progress'},
   go(d){location.hash='#'+d.h},
   calNav(d){UI.calOff=Math.min(0,(UI.calOff||0)+ +d.d);render()},
