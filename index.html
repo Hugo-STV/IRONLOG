@@ -16,6 +16,7 @@
   --accent:#1d5bb8; --accent-ink:#ffffff; --accent-soft:#dce6f6;
   --p-red:#cf3528; --p-blue:#1d5bb8; --p-yellow:#d99a0b; --p-green:#2a8a4c; --p-white:#e6e9ed; --p-silver:#98a1ab; --steel:#7d8692;
   --done:#e1f0e6; --done-line:#9fcdb0; --danger:#b8322a; --over:#f3d7d4; --sil:#c9d0d8; --reg:#aeb8c4; --hl:#1d5bb8; --tile:#f1f3f6;
+  --amb:#b26a00; --amb-bg:#fdf1dc; --amb-ln:#efc277; --grn:#16804a; --grn-bg:#e0f4e8; --grn-ln:#93d3ad; --vio:#6a43c9; --vio-bg:#ece6fb; --vio-ln:#bfaaf0; --accent-tint:#dce6f6;
   
   --f-display:"Saira Condensed","Arial Narrow","Roboto Condensed",sans-serif;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -26,14 +27,14 @@
   :root:not([data-theme="light"]){
     --bg:#0e1115; --surface:#161a20; --raised:#1d222a; --ink:#e7ebf0; --muted:#8c96a4; --line:#29303a;
     --accent:#5b93ec; --accent-ink:#0b1424; --accent-soft:#1c2c46;
-    --p-blue:#3d7ae0; --p-white:#d8dce1; --steel:#9aa3ae; --done:#15281d; --done-line:#2d5c3e; --danger:#ec6a5f; --over:#3a1d1a; --sil:#39404a; --reg:#4c5561; --hl:#e9eef5; --tile:#1d222a;
+    --p-blue:#3d7ae0; --p-white:#d8dce1; --steel:#9aa3ae; --done:#15281d; --done-line:#2d5c3e; --danger:#ec6a5f; --over:#3a1d1a; --sil:#39404a; --reg:#4c5561; --hl:#e9eef5; --tile:#1d222a; --amb:#f2b23e; --amb-bg:#3a2e16; --amb-ln:#7a5a1e; --grn:#4fd18b; --grn-bg:#173326; --grn-ln:#2d6a4a; --vio:#a88bff; --vio-bg:#2a2445; --vio-ln:#54468f; --accent-tint:#1f3556;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0e1115; --surface:#161a20; --raised:#1d222a; --ink:#e7ebf0; --muted:#8c96a4; --line:#29303a;
   --accent:#5b93ec; --accent-ink:#0b1424; --accent-soft:#1c2c46;
-  --p-blue:#3d7ae0; --p-white:#d8dce1; --steel:#9aa3ae; --done:#15281d; --done-line:#2d5c3e; --danger:#ec6a5f; --over:#3a1d1a; --sil:#39404a; --reg:#4c5561; --hl:#e9eef5; --tile:#1d222a;
+  --p-blue:#3d7ae0; --p-white:#d8dce1; --steel:#9aa3ae; --done:#15281d; --done-line:#2d5c3e; --danger:#ec6a5f; --over:#3a1d1a; --sil:#39404a; --reg:#4c5561; --hl:#e9eef5; --tile:#1d222a; --amb:#f2b23e; --amb-bg:#3a2e16; --amb-ln:#7a5a1e; --grn:#4fd18b; --grn-bg:#173326; --grn-ln:#2d6a4a; --vio:#a88bff; --vio-bg:#2a2445; --vio-ln:#54468f; --accent-tint:#1f3556;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -310,10 +311,41 @@ textarea.input{min-height:140px;font:12px/1.4 var(--f-mono)}
 .mbar .zone{position:absolute;top:0;bottom:0;background:var(--done);border-left:1px dashed var(--done-line);border-right:1px dashed var(--done-line)}
 .mbar .fill{position:absolute;left:0;top:3px;bottom:3px;background:var(--accent);border-radius:2px}
 .mbar b{font:600 13px var(--f-mono);text-align:right}
-.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,1fr);gap:3px;overflow-x:auto}
-.heat i{display:block;width:100%;aspect-ratio:1;min-width:11px;border-radius:2px;background:var(--raised);border:1px solid var(--line)}
-.heat i.on{background:var(--accent);border-color:var(--accent)}
-.heat i.fut{visibility:hidden}
+.heyebrow{font:700 12px var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 16px;display:grid;gap:12px}
+.hcard h2{font:700 26px/1.1 var(--f-display);letter-spacing:.01em;margin:0}
+.wkdots7{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.wkdots7 span{font:600 11px var(--f-body);color:var(--muted);letter-spacing:.06em}
+.wkdots7 i{justify-self:center;width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:block}
+.wkdots7 i.on{background:var(--accent);border-color:var(--accent)}
+.wkdots7 i.today{border-color:var(--accent)}
+.wkdots7 i.fut{opacity:.55}
+.hsum{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;font-size:14px;color:var(--muted)}
+.hsum b{font:700 20px var(--f-mono);color:var(--ink)}
+.hsum b.ac{color:var(--accent)}
+.htiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.htile{border-radius:16px;padding:12px;display:grid;gap:2px;align-content:start;border:1px solid}
+.htile .k{font:700 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase}
+.htile b{font:700 26px/1.15 var(--f-mono);font-variant-numeric:tabular-nums}
+.htile span{font-size:12.5px;color:var(--muted)}
+.htile.amb{background:var(--amb-bg);border-color:var(--amb-ln)}.htile.amb .k,.htile.amb b{color:var(--amb)}
+.htile.grn{background:var(--grn-bg);border-color:var(--grn-ln)}.htile.grn .k,.htile.grn b{color:var(--grn)}
+.htile.vio{background:var(--vio-bg);border-color:var(--vio-ln)}.htile.vio .k,.htile.vio b{color:var(--vio)}
+.cal-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cal-h button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:18px;line-height:1;flex:none}
+.cal-h button:disabled{opacity:.3}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.cal-g .dw{font:600 11px var(--f-body);letter-spacing:.06em;color:var(--muted);padding-bottom:2px}
+.cal-g .d{position:relative;aspect-ratio:1;max-height:44px;max-width:44px;width:100%;justify-self:center;display:grid;place-items:center;border:0;background:none;padding:0;font:500 14px var(--f-mono);color:var(--muted);border-radius:10px}
+.cal-g .d.blank{visibility:hidden}
+.cal-g .d.on{background:var(--accent-tint);color:var(--accent);font-weight:700;cursor:pointer}
+.cal-g .d.today{box-shadow:inset 0 0 0 2px var(--accent);color:var(--accent);font-weight:700}
+.cal-g .d i{position:absolute;top:2px;right:4px;font:700 9px var(--f-body);font-style:normal}
+.mhead{font:700 11px var(--f-body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:10px 2px -2px}
+.hempty{display:grid;justify-items:center;gap:10px;text-align:center;padding:30px 18px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
+.hempty svg{width:48px;height:48px;color:var(--accent)}
+.hempty b{font:700 22px var(--f-display);text-transform:uppercase;letter-spacing:.03em}
+.hempty p{margin:0;color:var(--muted);font-size:14px;max-width:34ch}
 .prs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
 .prs>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .prs b{display:block;font:600 19px var(--f-mono);margin-top:3px;font-variant-numeric:tabular-nums}
@@ -2010,25 +2042,32 @@ function normalize(){
 }
 /* Storage: localStorage is the main copy; every save is mirrored to IndexedDB, and the app never overwrites saved data it can't read. */
 const IDB_NAME='ironlog',IDB_STORE='kv';
-function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open(IDB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore(IDB_STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
-async function idbGet(k){try{const db=await idb();return await new Promise(res=>{const q=db.transaction(IDB_STORE).objectStore(IDB_STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}catch(e){return null}}
+const withTimeout=(pr,ms,fb)=>Promise.race([pr,new Promise(r=>setTimeout(()=>r(fb),ms))]);
+function idb(){return new Promise((res,rej)=>{try{if(!window.indexedDB)return rej(new Error('no idb'));const r=indexedDB.open(IDB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore(IDB_STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+async function idbGet(k){return withTimeout(idbGet0(k),1500,null)}
+async function idbGet0(k){try{const db=await idb();return await new Promise(res=>{const q=db.transaction(IDB_STORE).objectStore(IDB_STORE).get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}catch(e){return null}}
 async function idbSet(k,v){try{const db=await idb();await new Promise(res=>{const t=db.transaction(IDB_STORE,'readwrite');t.objectStore(IDB_STORE).put(v,k);t.oncomplete=res;t.onerror=res})}catch(e){}}
 const realCount=st=>st&&Array.isArray(st.workouts)?st.workouts.filter(w=>!w.sample).length:0;
 let RECOVERED=null;
-async function load(){
+/* Start instantly from localStorage; the IndexedDB mirror is checked afterwards in the background and can never block startup. */
+let FRESH=false;
+function load(){
   let raw=null; try{raw=localStorage.getItem(KEY)}catch(e){}
   let parsed=null;
   if(raw){try{parsed=JSON.parse(raw)}catch(e){try{localStorage.setItem(KEY+'.unreadable.'+Date.now(),raw)}catch(_){};idbSet('unreadable.'+Date.now(),raw)}}
-  const mirror=await idbGet('state');let mir=null;if(mirror){try{mir=JSON.parse(mirror)}catch(e){}}
-  if(parsed&&mir&&realCount(mir)>realCount(parsed)){S=mir;RECOVERED=realCount(mir)}
-  else if(parsed)S=parsed;
-  else if(mir&&realCount(mir)){S=mir;RECOVERED=realCount(mir)}
-  if(!S){S=defaults();rebuildEx();S.routines=seedRoutines();S.programs=seedPrograms();loadSample();}
-  normalize();save();
+  if(parsed)S=parsed;
+  else{S=defaults();rebuildEx();S.routines=seedRoutines();S.programs=seedPrograms();loadSample();FRESH=true}
+  normalize();
+  if(!FRESH)save();else{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+}
+async function recoverFromMirror(){
+  const mirror=await idbGet('state');if(!mirror)return;let mir=null;try{mir=JSON.parse(mirror)}catch(e){return}
+  if(realCount(mir)>realCount(S)){S=mir;normalize();save();RECOVERED=realCount(mir);render();toast(`Restored ${RECOVERED} workout${RECOVERED>1?'s':''} from this device's backup copy`)}
+  else if(!FRESH)idbSet('state',JSON.stringify(S));
 }
 let mirrorT=null;
-function save(){const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}clearTimeout(mirrorT);mirrorT=setTimeout(()=>idbSet('state',j),400)}
-function askPersist(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persisted().then(p=>{if(!p)navigator.storage.persist()})}catch(e){}}
+function save(){const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}if(!realCount(S))return;clearTimeout(mirrorT);mirrorT=setTimeout(()=>idbSet('state',j),400)}
+function askPersist(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persisted().then(p=>{if(!p)return navigator.storage.persist()}).catch(()=>{})}catch(e){}}
 const daysSince=t=>t?Math.floor((Date.now()-t)/DAY):null;
 
 /* ---------- units ---------- */
@@ -2711,18 +2750,49 @@ function vEditRoutine(){
   <button class="btn wide" data-a="pick" data-mode="routine">Add exercises</button>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" style="flex:1" data-a="saveRoutine">Save routine</button><button class="btn" data-a="cancelEdit">Cancel</button>${r._new?'':`<button class="btn ghost danger" data-a="confirm" data-what="delRoutine">Delete</button>`}</div></section>`;
 }
-function heatmap(){
-  const weeks=18;const today=new Date();today.setHours(0,0,0,0);const dow=(today.getDay()+6)%7;
-  const off=-(weeks*7-1-(6-dow));const at=k=>new Date(today.getFullYear(),today.getMonth(),today.getDate()+off+k).getTime();const start=at(0);
-  const days=new Set(S.workouts.map(w=>{const d=new Date(w.start);d.setHours(0,0,0,0);return d.getTime()}));
-  let cells='';for(let k=0;k<weeks*7;k++){const t=at(k);cells+=`<i class="${t>today.getTime()?'fut':days.has(t)?'on':''}" title="${fdateS(t)}"></i>`}
-  const n=S.workouts.filter(w=>w.start>=start).length;
-  return `<div class="panel" style="display:grid;gap:8px"><div class="heat" style="grid-template-columns:repeat(${weeks},minmax(11px,1fr))">${cells}</div><span class="muted small">${n} workouts in the last ${weeks} weeks · rows run Monday to Sunday</span></div>`;
+function dayKey(t){const d=new Date(t);return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`}
+function dayStreak(){const days=new Set(S.workouts.map(w=>dayKey(w.start)));const d=new Date();d.setHours(0,0,0,0);
+  if(!days.has(dayKey(d)))d.setDate(d.getDate()-1);let n=0;while(days.has(dayKey(d))){n++;d.setDate(d.getDate()-1)}return n}
+function weekCard(){
+  const d0=new Date();d0.setHours(0,0,0,0);const mon=new Date(d0);mon.setDate(d0.getDate()-((d0.getDay()+6)%7));
+  const days=new Set(S.workouts.map(w=>dayKey(w.start)));let hit=0;
+  const dots=[...Array(7)].map((_,k)=>{const d=new Date(mon);d.setDate(mon.getDate()+k);const on=days.has(dayKey(d));if(on)hit++;
+    return `<i class="${on?'on':''} ${dayKey(d)===dayKey(d0)?'today':''} ${d>d0?'fut':''}" title="${fdate(d)}"></i>`}).join('');
+  const ap=S.programs.find(p=>p.id===S.activeProgram);const goal=ap?ap.days.length:((S.profile||{}).freq||null);
+  const head=goal?`${Math.min(hit,goal)}/${goal} planned days hit`:`${hit} day${hit===1?'':'s'} trained`;
+  return `<div class="hcard"><span class="heyebrow">This week</span><h2>${head}</h2>
+  <div class="wkdots7">${['M','T','W','T','F','S','S'].map(x=>`<span>${x}</span>`).join('')}${dots}</div>
+  <div class="hsum">${goal?`<b>${Math.min(hit,goal)}/${goal}</b> planned <span>·</span> <b class="ac">${Math.round(Math.min(hit,goal)/goal*100)}%</b> hit rate`:`<b>${hit}</b> day${hit===1?'':'s'} trained <span>·</span> <button class="linkbtn" style="padding:0" data-a="go" data-h="prefs">Set a weekly goal</button>`}</div></div>`;
+}
+function calendar(){
+  const now=new Date();const off=UI.calOff||0;const m0=new Date(now.getFullYear(),now.getMonth()+off,1);
+  const byDay={};S.workouts.forEach(w=>{const k=dayKey(w.start);(byDay[k]=byDay[k]||[]).push(w)});
+  const first=(m0.getDay()+6)%7;const nd=new Date(m0.getFullYear(),m0.getMonth()+1,0).getDate();
+  const tk=dayKey(Date.now());let cells='';for(let k=0;k<first;k++)cells+='<span class="d blank"></span>';
+  for(let n=1;n<=nd;n++){const d=new Date(m0.getFullYear(),m0.getMonth(),n);const key=dayKey(d);const ws=byDay[key]||[];
+    const cls=['d',key===tk?'today':'',ws.length?'on':''].join(' ');
+    cells+=ws.length?`<button class="${cls}" data-a="openWorkout" data-id="${ws[0].id}" aria-label="${fdate(d)}: ${ws.map(w=>esc(w.name)).join(', ')}">${n}${ws.length>1?`<i>${ws.length}</i>`:''}</button>`:`<span class="${cls}">${n}</span>`}
+  const earliest=S.workouts.length?Math.min(...S.workouts.map(w=>w.start)):Date.now();const eD=new Date(earliest);
+  const canBack=m0.getFullYear()*12+m0.getMonth()>eD.getFullYear()*12+eD.getMonth();
+  return `<div class="hcard"><span class="heyebrow">Calendar</span><div class="cal-h"><h2>${m0.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><span style="display:flex;gap:6px"><button data-a="calNav" data-d="-1" aria-label="Previous month" ${canBack?'':'disabled'}>‹</button><button data-a="calNav" data-d="1" aria-label="Next month" ${off<0?'':'disabled'}>›</button></span></div>
+  <div class="cal-g">${['M','T','W','T','F','S','S'].map(x=>`<span class="dw">${x}</span>`).join('')}${cells}</div></div>`;
 }
 function vHistory(){
   const ws=sorted().reverse();
-  return `${sampleBanner()}<section class="block"><h1 class="h1">History</h1>${heatmap()}
-  ${ws.length?ws.map(wCard).join(''):`<div class="empty">Finished workouts show up here.</div>`}</section>`;
+  const head=`<span class="heyebrow" style="margin-top:6px">History</span><h1 class="h1" style="margin-top:-6px;text-transform:none;font-size:36px">Every session. Every rep.</h1>`;
+  if(!ws.length)return `${sampleBanner()}<section class="block">${head}
+  <div class="hempty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M9 15l2 2 4-4"/></svg><b>No workouts yet</b><p>Finish your first workout and it shows up here, on a calendar of every day you trained.</p><button class="btn primary" data-a="startEmpty">Start a workout</button></div></section>`;
+  const now=new Date();const mStart=new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  const wk=new Date();wk.setHours(0,0,0,0);wk.setDate(wk.getDate()-((wk.getDay()+6)%7));
+  const thisMonth=ws.filter(w=>w.start>=mStart).length,thisWeek=ws.filter(w=>w.start>=wk.getTime()).length,ds=dayStreak();
+  let list='',cur='';ws.forEach(w=>{const m=new Date(w.start).toLocaleDateString(undefined,{month:'long',year:'numeric'});if(m!==cur){cur=m;list+=`<div class="mhead">${m}</div>`}list+=wCard(w)});
+  return `${sampleBanner()}<section class="block">${head}
+  ${weekCard()}
+  <div class="hcard"><div class="htiles">
+   <div class="htile amb"><span class="k">🔥 Streak</span><b>${ds}</b><span>day${ds===1?'':'s'} in a row</span></div>
+   <div class="htile grn"><span class="k">This month</span><b>${thisMonth}</b><span>session${thisMonth===1?'':'s'}</span></div>
+   <div class="htile vio"><span class="k">This week</span><b>${thisWeek}</b><span>session${thisWeek===1?'':'s'}</span></div></div></div>
+  ${calendar()}${list}</section>`;
 }
 const METRICS={wr:[['perf','Performance','w'],['e1','Est. 1RM','w'],['heavy','Heaviest','w'],['setVol','Best set volume','w'],['vol','Session volume','w'],['reps','Total reps','n']],r:[['maxReps','Most reps','n'],['reps','Total reps','n'],['heavy','Added weight','w']],t:[['time','Longest hold','t']],wt:[['time','Longest','t'],['heavy','Heaviest','w']],dt:[['dist','Distance','d'],['time','Duration','t']]};
 function fmtMetric(kind,v,short){if(kind==='w')return short?trimNum(round(v,1)):`${trimNum(round(v,1))} ${wu()}`;if(kind==='t')return ft(v);if(kind==='d')return short?trimNum(round(v,1)):`${trimNum(round(v,2))} ${du()}`;return `${Math.round(v)}`}
@@ -3039,6 +3109,8 @@ const A={
   openWorkout(d){UI.sheet={kind:'workout',id:d.id};renderSheet()},
   openEx(d){const back=UI.sheet&&(UI.sheet.kind==='picker'||UI.sheet.kind==='exMenu')?UI.sheet:null;UI.sheet={kind:'exercise',id:d.id,back};renderSheet()},
   viewProgress(d){UI.progEx=d.id;UI.progMetric=null;UI.sheet=null;if(location.hash==='#progress')render();else location.hash='#progress'},
+  go(d){location.hash='#'+d.h},
+  calNav(d){UI.calOff=Math.min(0,(UI.calOff||0)+ +d.d);render()},
   metric(d){UI.progMetric=d.m;render()},
   libMuscle(d){UI.libMuscle=d.m;render()},
   createPlan(d){UI.view='routines';UI.rtab='programs';UI.progOpen=null;UI.editProg=null;const P=S.profile||{};
@@ -3218,8 +3290,8 @@ window.addEventListener('hashchange',route);
 
 (()=>{const v=window.visualViewport;if(!v)return;const r=document.documentElement;const f=()=>{r.style.setProperty('--vvh',v.height+'px');r.style.setProperty('--vvt',v.offsetTop+'px')};v.addEventListener('resize',f);v.addEventListener('scroll',f);f()})();
 document.body.insertAdjacentHTML('afterbegin',bodySprite());
-(async()=>{await load();route();setInterval(tick,1000);askPersist();
-  if(RECOVERED)setTimeout(()=>toast(`Restored ${RECOVERED} workout${RECOVERED>1?'s':''} from this device's backup copy`),400)})();
+load();route();setInterval(tick,1000);
+setTimeout(()=>{try{recoverFromMirror().catch(()=>{});askPersist()}catch(e){}},300);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&S){try{idbSet('state',JSON.stringify(S))}catch(e){}}});
 })();
 </script>
