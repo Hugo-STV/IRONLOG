@@ -374,10 +374,11 @@ textarea.input{min-height:140px;font:12px/1.4 var(--f-mono)}
 .bmap polygon{stroke:var(--surface);stroke-width:.6;stroke-linejoin:round}
 .bm-x{fill:color-mix(in srgb,var(--muted) 14%,var(--surface))}.bm{cursor:pointer;transition:fill-opacity .2s}
 .bm.l0{fill:color-mix(in srgb,var(--muted) 26%,var(--surface))}.bmleg .l0{background:color-mix(in srgb,var(--muted) 26%,var(--surface));opacity:1}
-.bm.l1,.bm.l2,.bm.l3,.bm.l4{fill:var(--accent)}.bm.l1{fill-opacity:.4}.bm.l2{fill-opacity:.62}.bm.l3{fill-opacity:.84}.bm.l4{fill-opacity:1}
+:root{--h1:#3d43a8;--h2:#3f86ff;--h3:#1fd1c1;--h4:#c4f23a}.bm.l1{fill:var(--h1)}.bm.l2{fill:var(--h2)}.bm.l3{fill:var(--h3)}.bm.l4{fill:var(--h4)}
 .bm:hover{stroke:var(--ink)}
 .bmleg{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;font-size:12px;color:var(--muted)}.bmleg span{display:flex;align-items:center;gap:5px}.bmleg i{width:12px;height:12px;border-radius:3px;background:var(--accent)}
-.bmleg .l1{opacity:.4}.bmleg .l2{opacity:.62}.bmleg .l3{opacity:.84}
+.bmleg .l1{background:var(--h1)}.bmleg .l2{background:var(--h2)}.bmleg .l3{background:var(--h3)}.bmleg .l4{background:var(--h4)}
+.li.nxt{align-items:center}.nx-t{flex:1;min-width:0}.nx-t .t2{white-space:normal}.li.nxt .r{flex:none;font-size:13px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:var(--raised)}
 .radar{position:relative;width:100%;max-width:340px;margin:4px auto;aspect-ratio:1}.radar>svg{position:absolute;inset:0;width:100%;height:100%}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
@@ -2219,7 +2220,7 @@ function suggestRaw(exId,lo,hi,beforeT){
     const ws=last.sets.filter(s=>s.w!=null&&s.r);if(!ws.length)return null;
     lo=lo||8;hi=hi||12;
     const top=Math.max(...ws.map(s=>s.w));const at=ws.filter(s=>Math.abs(s.w-top)<1e-6);const best=Math.max(...at.map(s=>s.r));
-    if(best>hi+3||best<lo-3){const em=Math.max(...ss.slice(-3).map(s=>s.e1));const w=Math.max(floorInc(em/(1+lo/30)*0.97,e),0);return {w,r:lo,kind:'e1',when,why:`Estimated from your best recent 1RM (${fwu(em)}) for ${lo}–${hi} reps`}}
+    if(best>hi+3||best<lo-3){const em=Math.max(...ss.slice(-3).map(s=>s.e1));const w=Math.max(floorInc(em/(1+lo/30)*0.97,e),0);return {w,r:lo,kind:'e1',when,why:`Estimated from your best recent 1RM (${fwu(Math.round(em*2)/2)}) for ${lo}–${hi} reps`}}
     if(at.every(s=>s.r>=hi))return {w:roundInc(top+fromD(incD(e)),e),r:lo,kind:'up',when,why:`You hit ${hi} reps on every set at ${fwu(top)}. Add weight`};
     {const rs=at.filter(s=>s.rir!=null);if(rs.length===at.length&&rs.every(s=>s.rir>=3)&&best>=lo)return {w:roundInc(top+fromD(incD(e)),e),r:Math.min(best,hi),kind:'up',when,why:`Last time felt easy (3+ reps in reserve on every set). Add weight`}}
     const prev=ss[ss.length-2];
@@ -2243,7 +2244,9 @@ function prevFor(ae,j,prevSess){
   const list=prevSess.sets.filter(p=>(p.type==='W'?'W':'X')===cat);return list[ord]||null;
 }
 function setTarget(ae,j,sg,p){
-  const s=ae.sets[j];if(s.type==='W'||!sg)return p?{w:p.w,r:p.r,t:p.t,d:p.d}:null;
+  const s=ae.sets[j];
+  /* same as the set you just finished: copy the nearest earlier completed set of the same kind */
+  if(s.type!=='W'&&s.type!=='D'){for(let k=j-1;k>=0;k--){const q=ae.sets[k];if(q.done&&q.type!=='W'&&q.type!=='D')return {w:q.w,r:q.r,t:q.t,d:q.d}}}if(s.type==='W'||!sg)return p?{w:p.w,r:p.r,t:p.t,d:p.d}:null;
   if(sg.kind!=='same'||!p)return {w:sg.w,r:sg.r,t:sg.t,d:sg.d};
   const hi=ae.repMax||99,lo=ae.repMin||1;
   if(p.w!=null&&sg.w!=null&&Math.abs(p.w-sg.w)<1e-6&&p.r)return {w:sg.w,r:Math.max(lo,Math.min(hi,p.r<hi?p.r+1:p.r)),t:sg.t,d:sg.d};
@@ -3250,7 +3253,7 @@ function shSummary(s){
   const nexts=[];const seen=new Set();w.exercises.forEach(ae=>{if(seen.has(ae.exId))return;seen.add(ae.exId);const p=prefsFor(ae.exId);const sg=suggestFor(ae.exId,p.repMin,p.repMax);if(sg)nexts.push([ae.exId,sg])});
   return sheet('Workout saved',`<div class="trophy"><span class="label">${esc(w.name)}</span><span class="big">${w.prs.length?w.prs.length+' PR'+(w.prs.length>1?'s':''):'Done'}</span><span class="muted">${ft((w.end-w.start)/1000)} · ${fvol(o.v)} ${wu()} · ${o.n} working sets</span></div>
   ${w.prs.length?`<div class="list">${w.prs.map(p=>`<div class="li"><span class="pill pr">PR</span><div><div class="t1">${esc(ex(p.exId).name)}</div><div class="t2">${esc(p.kind)}</div></div><span class="r">${esc(p.label)}</span></div>`).join('')}</div>`:'<p class="muted" style="margin:0;text-align:center">No new records this time. Consistency is what moves the numbers.</p>'}
-  ${nexts.length?`<span class="label">Next time</span><div class="list">${nexts.map(([id,sg])=>`<div class="li"><div><div class="t1">${esc(ex(id).name)}</div><div class="t2">${esc(sg.why)}</div></div><span class="r" style="color:${sg.kind==='up'?'var(--p-green)':sg.kind==='down'?'var(--danger)':'inherit'}">${sg.kind==='up'?'▲ ':sg.kind==='down'?'▼ ':''}${esc(sugText(ex(id),sg))}</span></div>`).join('')}</div>`:''}`,
+  ${nexts.length?`<span class="label">Next time</span><div class="list">${nexts.map(([id,sg])=>`<div class="li nxt"><div class="nx-t"><div class="t1">${esc(ex(id).name)}</div><div class="t2">${esc(sg.why)}</div></div><span class="r" style="color:${sg.kind==='up'?'var(--p-green)':sg.kind==='down'?'var(--danger)':'inherit'}">${sg.kind==='up'?'▲ ':sg.kind==='down'?'▼ ':''}${esc(sugText(ex(id),sg))}</span></div>`).join('')}</div>`:''}`,
   `<button class="btn primary" data-a="closeSheet">Done</button>`);
 }
 const CONFIRMS={discard:['Discard this workout?','Every set you logged in this session will be lost.','Discard'],delRoutine:['Delete this routine?','Your past workouts stay in history.','Delete routine'],delWorkout:['Delete this workout?','It will be removed from history and charts.','Delete workout'],reset:['Erase everything?','All workouts, routines, custom exercises and settings in this browser will be deleted. Export a backup first if you might want them.','Erase everything'],delProgram:['Delete this program?','Workouts you already finished stay in your history.','Delete program'],resetProgram:['Reset program progress?','All weeks go back to not started. Your workout history is kept.','Reset'],emptyFinish:['No completed sets','Tick at least one set before finishing, or discard the workout.','Discard workout']};
