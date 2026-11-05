@@ -559,6 +559,9 @@ svg.hexb.lock{filter:none;background:none}.hx-in{fill:#12142a}.hx-q{font:800 22p
 .crlist{display:grid;gap:8px}.crrow{display:flex;align-items:center;gap:12px;padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.crrow.sug{border-color:color-mix(in srgb,#f5a623 35%,var(--line));background:color-mix(in srgb,#f5a623 5%,var(--surface))}
 .crrow .thumb{width:54px;height:54px}.crr-t{flex:1;min-width:0;display:grid;gap:2px;text-align:left;border:0;background:none;color:inherit;padding:0}.crr-t b{font-size:15.5px}.crr-t span{font-size:12.5px;color:var(--muted)}.star{color:#f5a623;font-style:normal}
 .crstick{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:5;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.bdg{position:relative;display:inline-grid;place-items:center;height:var(--bh);width:calc(var(--bh)*.671);flex:none}.bdg img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(124,58,237,.35))}
+.bdg.lock img{filter:grayscale(1) brightness(.28) blur(1.5px)}.bdg.lock b{position:absolute;font:800 calc(var(--bh)*.3) var(--f-display);color:#8a93a8}
+.journey .jr .bdg{--bh:120px!important}.journey .jr.lock .bdg{--bh:96px!important}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
 .fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
@@ -3163,15 +3166,14 @@ function shSInfo(){return sheet('Strength score',`<p style="margin:0">Each muscl
   <p class="muted small" style="margin:0">Your overall score is the average of every rated muscle group. Standards are based on widely used strength tables (body-weight multiples). Women's standards are about 62% of men's for upper body and 75% for lower body. Treat it as a motivating guide, not a lab test.</p>`,'',{})}
 
 /* ---------- lifting legacy ---------- */
-const MILES=[['African elephant',13000],['T. rex',18000],['School bus',25000],['Fire truck',40000],['Semi truck',80000],['Blue whale',330000],['Statue of Liberty',450000],['Jumbo jet',975000],['Big Boy locomotive',1200000],['Saturn V rocket',6200000],['Eiffel Tower',16000000],['Titanic',104000000],['Aircraft carrier',200000000],['Empire State Building',730000000],['Golden Gate Bridge',1770000000],['Great Pyramid of Giza',12000000000]];
+const MILES=[['Gorilla',13000],['Grizzly bear',18000],['Bull',25000],['Rhino',40000],['Hippo',80000],['Elephant',330000],['Woolly mammoth',450000],['Polar bear',975000],['Silverback king gorilla',1200000],['T. rex',6200000],['Megalodon shark',16000000],['Kraken',104000000],['Dragon',200000000],['Leviathan',730000000],['Titan',1770000000],['Peak god',12000000000]];
 const LB=2.2046226;
 function totalKg(){return S.workouts.reduce((a,w)=>a+volOf(w).v,0)}
 function legacyAt(kg){const lb=kg*LBK;let i=-1;MILES.forEach((m,k)=>{if(lb>=m[1])i=k});return {i,cur:MILES[i]||null,next:MILES[i+1]||null,lb}}
 const fBig=kg=>{const v=toD(kg);return v>=1e9?`${trimNum(round(v/1e9,2))}B`:v>=1e6?`${trimNum(round(v/1e6,2))}M`:v>=1e3?`${trimNum(round(v/1e3,1))}K`:trimNum(Math.round(v))};
 const mKg=lb=>lb/LBK;
-function hexBadge(m,state,size){const k=Math.max(0,MILES.indexOf(m));const g=state==='lock'?'mtL':'mt'+Math.min(5,Math.floor(k/3));const lk=state==='lock';
-  return `<svg class="hexb ${state}" style="--hs:${size||64}px" viewBox="0 0 48 52" aria-hidden="true"><path d="M24 1.5L45.5 13.75v24.5L24 50.5 2.5 38.25v-24.5z" fill="url(#${g})"/><path d="M24 5.5L42 15.8v20.4L24 46.5 6 36.2V15.8z" class="hx-in"/>
-  ${lk?`<text x="24" y="33" text-anchor="middle" class="hx-q">?</text>`:`<path d="M9.5 37L19 22.5l5 6.5 4.5-6 10 14z" fill="url(#${g})"/><path d="M17.5 21L33 9.5" stroke="url(#${g})" stroke-width="3" fill="none" stroke-linecap="square"/><path d="M27 8.5h7v7z" fill="url(#${g})"/><path d="M14 14.5l1.2 2.6 2.6 1.2-2.6 1.2-1.2 2.6-1.2-2.6-2.6-1.2 2.6-1.2z" fill="#fff" opacity=".85"/><text x="24" y="44.2" text-anchor="middle" class="hx-n">${k+1}</text>`}</svg>`}
+function hexBadge(m,state,size){const k=Math.max(0,MILES.indexOf(m));const h=Math.round((size||64)*1.2);const lk=state==='lock';
+  return `<span class="bdg ${lk?'lock':''}" style="--bh:${h}px"><img src="badges/${String(k+1).padStart(2,'0')}.webp" alt="${lk?'Locked badge':esc(m[0])+' badge'}" loading="lazy" decoding="async">${lk?'<b>?</b>':''}</span>`}
 function legacyCard(){const kg=totalKg();const L=legacyAt(kg);const prevLb=L.cur?L.cur[1]:0;const pct=L.next?Math.min(100,(L.lb-prevLb)/(L.next[1]-prevLb)*100):100;
   return `<div class="hcard leg"><div class="leg-top"><div><span class="muted small">Total lifted</span><div class="leg-n"><b>${fBig(kg)}</b><span>${wu()}</span></div></div>${L.cur?hexBadge(L.cur,'on',68):hexBadge(MILES[0],'lock',68)}</div>
   ${L.next?`<div class="row-between"><b>Next: ${L.next[0]}</b><span class="muted small">${fBig(mKg(L.next[1])-kg)} ${wu()} left</span></div><div class="fx-bar thick"><i style="width:${pct}%"></i></div>`:'<b>Every milestone unlocked. Legendary.</b>'}
