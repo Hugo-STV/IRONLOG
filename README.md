@@ -23,7 +23,7 @@ A free, private workout tracker inspired by Hevy and Alpha Progress. It runs ent
 
 **Progress** (tabs: Overview, This week, Trends, Exercises)
 - **Strength score**: each muscle group ranked Beginner → World Class (levels I–III) from your best lifts vs body weight, a colored body map, per-muscle detail with what you need for the next level, progress over 12 weeks, and goals.
-- **Lifting legacy**: total weight lifted with milestone badges (from a golden retriever to the Titanic) and a journey view.
+- **Lifting legacy**: total weight lifted with milestone badges (from an African elephant to the Great Pyramid of Giza) and a journey view.
 - **Your journey** totals, **training split** donut, **top lifts**, **weekly momentum** vs last week, **new records**, **consistency** heatmap and streaks, **volume trend** with an optimal zone, **plateau check**, and a **PR timeline**.
 - **Session impact** after every workout: session volume compared to real objects, muscles worked, strength score change, milestone progress and per-exercise sets.
 - **Weight suggestions** for every set: double progression inside your rep range, an increase when sets felt easy (RIR 3+), a 10% reset after two misses, and starting estimates from your profile for exercises you've never done.

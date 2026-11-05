@@ -3009,17 +3009,17 @@ function shSInfo(){return sheet('Strength score',`<p style="margin:0">Each muscl
   <p class="muted small" style="margin:0">Your overall score is the average of every rated muscle group. Standards are based on widely used strength tables (body-weight multiples). Women's standards are about 62% of men's for upper body and 75% for lower body. Treat it as a motivating guide, not a lab test.</p>`,'',{})}
 
 /* ---------- lifting legacy ---------- */
-const MILES=[['Golden retriever',70,'🐕'],['Giant panda',250,'🐼'],['Gorilla',400,'🦍'],['Grizzly bear',600,'🐻'],['Grand piano',1000,'🎹'],['Horse',1200,'🐎'],['Polar bear',1500,'🐻‍❄️'],['Car',3000,'🚗'],['Hippo',4000,'🦛'],['Rhinoceros',5000,'🦏'],['African elephant',13000,'🐘'],['T. rex',18000,'🦖'],['School bus',25000,'🚌'],['Fire truck',40000,'🚒'],['Semi truck',80000,'🚛'],['Space shuttle',165000,'🚀'],['Blue whale',330000,'🐋'],['Statue of Liberty',450000,'🗽'],['Space station',925000,'🛰️'],['Jumbo jet',975000,'✈️'],['Eiffel Tower',16000000,'🗼'],['Titanic',104000000,'🚢']];
+const MILES=[['African elephant',13000,'🐘'],['T. rex',18000,'🦖'],['School bus',25000,'🚌'],['Fire truck',40000,'🚒'],['Semi truck',80000,'🚛'],['Blue whale',330000,'🐋'],['Statue of Liberty',450000,'🗽'],['Jumbo jet',975000,'✈️'],['Big Boy locomotive',1200000,'🚂'],['Saturn V rocket',6200000,'🚀'],['Eiffel Tower',16000000,'🗼'],['Titanic',104000000,'🚢'],['Aircraft carrier',200000000,'🛳️'],['Empire State Building',730000000,'🏙️'],['Golden Gate Bridge',1770000000,'🌉'],['Great Pyramid of Giza',12000000000,'🔺']];
 const LB=2.2046226;
 function totalKg(){return S.workouts.reduce((a,w)=>a+volOf(w).v,0)}
 function legacyAt(kg){const lb=kg*LBK;let i=-1;MILES.forEach((m,k)=>{if(lb>=m[1])i=k});return {i,cur:MILES[i]||null,next:MILES[i+1]||null,lb}}
-const fBig=kg=>{const v=toD(kg);return v>=1e6?`${trimNum(round(v/1e6,2))}M`:v>=1e3?`${trimNum(round(v/1e3,1))}K`:trimNum(Math.round(v))};
+const fBig=kg=>{const v=toD(kg);return v>=1e9?`${trimNum(round(v/1e9,2))}B`:v>=1e6?`${trimNum(round(v/1e6,2))}M`:v>=1e3?`${trimNum(round(v/1e3,1))}K`:trimNum(Math.round(v))};
 const mKg=lb=>lb/LBK;
 function hexBadge(m,state,size){return `<span class="hexb ${state}" style="--hs:${size||64}px"><span>${state==='lock'?'?':m[2]}</span></span>`}
 function legacyCard(){const kg=totalKg();const L=legacyAt(kg);const prevLb=L.cur?L.cur[1]:0;const pct=L.next?Math.min(100,(L.lb-prevLb)/(L.next[1]-prevLb)*100):100;
   return `<div class="hcard leg"><div class="leg-top"><div><span class="muted small">Total lifted</span><div class="leg-n"><b>${fBig(kg)}</b><span>${wu()}</span></div></div>${L.cur?hexBadge(L.cur,'on',68):hexBadge(MILES[0],'lock',68)}</div>
   ${L.next?`<div class="row-between"><b>Next: ${L.next[0]}</b><span class="muted small">${fBig(mKg(L.next[1])-kg)} ${wu()} left</span></div><div class="fx-bar thick"><i style="width:${pct}%"></i></div>`:'<b>Every milestone unlocked. Legendary.</b>'}
-  <button class="leg-foot" data-a="journey">${L.cur?`${hexBadge(L.cur,'on',34)}<span>${L.cur[0]} unlocked · ${L.i+1} of ${MILES.length}</span>`:'<span>Lift your first 70 lb to unlock a badge</span>'}<span class="ac">View journey ›</span></button></div>`}
+  <button class="leg-foot" data-a="journey">${L.cur?`${hexBadge(L.cur,'on',34)}<span>${L.cur[0]} unlocked · ${L.i+1} of ${MILES.length}</span>`:`<span>Lift ${fBig(mKg(MILES[0][1]))} ${wu()} in total to unlock your first badge</span>`}<span class="ac">View journey ›</span></button></div>`}
 function shJourney(){const kg=totalKg();const L=legacyAt(kg);
   const items=MILES.map((m,k)=>({m,k})).reverse().map(({m,k})=>{const st=k<=L.i?'on':k===L.i+1?'nx':'lock';const side=k%2?'r':'l';
     return `<div class="jr ${side} ${st}" ${st==='nx'||(st==='on'&&k===L.i&&!L.next)?'id="jcur"':''}>${hexBadge(m,st==='nx'?'lock':st,st==='lock'?72:88)}<div class="jt"><b>${m[0]}</b><span>${fBig(mKg(m[1]))} ${wu()}</span>${st==='nx'?`<span class="ac small">${fBig(mKg(m[1])-kg)} ${wu()} to go</span>`:''}</div></div>`}).join('<div class="jpath"></div>');
