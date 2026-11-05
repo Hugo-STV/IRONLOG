@@ -563,6 +563,10 @@ svg.hexb.lock{filter:none;background:none}.hx-in{fill:#12142a}.hx-q{font:800 22p
 .bdg.lock img{filter:grayscale(1) brightness(.28) blur(1.5px)}.bdg.lock b{position:absolute;font:800 calc(var(--bh)*.3) var(--f-display);color:#8a93a8}
 .journey .jr .bdg{--bh:120px!important}.journey .jr.lock .bdg{--bh:96px!important}
 .cloud{gap:10px;border-color:color-mix(in srgb,#22c55e 35%,var(--line))}.cloud .fx-h>div{display:grid;gap:2px}.cloud .fx-h b{font-size:16px}.lform{display:grid;gap:8px}.lform .row-between .linkbtn{padding:4px 0}.cbsteps{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--muted)}.cbsteps a{color:var(--accent);font-weight:700}.cbsteps b{color:var(--ink)}
+.streak2{display:grid;grid-template-columns:72px 1fr;grid-template-rows:auto auto;gap:12px 14px;align-items:center;background:linear-gradient(120deg,color-mix(in srgb,#f97316 10%,var(--surface)),var(--surface) 55%);border:1px solid color-mix(in srgb,#f97316 25%,var(--line));border-radius:18px;padding:16px}
+.streak2 img{width:72px;height:auto;grid-row:1;filter:drop-shadow(0 6px 16px rgba(249,115,22,.35))}.streak2.cold img{filter:grayscale(1) brightness(.6)}.streak2.cold{background:var(--surface);border-color:var(--line)}
+.sk-n{display:flex;align-items:center;gap:10px}.sk-n b{font:800 52px/1 var(--f-display);color:#fb923c}.streak2.cold .sk-n b{color:var(--muted)}.sk-n span{font:700 14px/1.15 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.sk-w{display:block;color:#f59e0b;margin-top:4px}
+.sk-s{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-top:12px;text-align:center}.sk-s div{display:grid;gap:2px}.sk-s div+div{border-left:1px solid var(--line)}.sk-s b{font-size:19px}.sk-s span{font-size:12px;color:var(--muted)}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
 .fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
@@ -3867,12 +3871,11 @@ function vEditProgram(){
 function backupBanner(){const n=realCount(S);if(n<1)return '';const cb=acct();if(cb&&!cb.err)return '';const d=daysSince(S.lastBackup);if(d!=null&&d<7)return '';
   return `<div class="banner" style="background:var(--over)"><p><b>${d==null?'You haven\'t backed up yet.':`Last backup ${d} days ago.`}</b> Your ${n} workout${n>1?'s are':' is'} stored only on this device. Save a backup file so you can't lose them.</p><button class="btn sm" data-a="saveBackup">Back up now</button></div>`}
 function streakCard(){
-  const st=streaks();if(!st.total)return '';
-  const goal=st.goal;const dots=goal?Array.from({length:goal},(_,k)=>`<i class="${k<st.thisWeek?'on':''}"></i>`).join(''):'';
-  return `<section class="block"><div class="streak"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3c2 6 9 9 9 19a9 9 0 0 1-18 0c0-5 3-7 4-11 1 3 3 4 4 4-1-4-1-8 1-12z" fill="${st.alive?'var(--p-red)':'var(--line)'}"/><path d="M20 22c1 3 4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 2-5 .5 1 1.2 1.6 2 1.8-.4-1.6-.4-3.2 0-4.8z" fill="${st.alive?'var(--p-yellow)':'var(--raised)'}"/></svg>
-  <b>${st.cur} week${st.cur===1?'':'s'} streak</b><div class="sub"><span>Best ${st.best}</span><span>${st.total} workouts</span><span>This week ${st.thisWeek}${goal?` / ${goal}`:''}</span></div>
-  ${dots?`<div class="wkdots" style="grid-column:2" aria-label="${st.thisWeek} of ${goal} workouts this week">${dots}</div>`:''}
-  ${!st.alive&&st.cur?`<span class="small" style="grid-column:2">Train this week to keep your streak going.</span>`:''}</div></section>`;
+  const st=streaks();if(!st.total)return '';const goal=st.goal;
+  const stat=(v,l)=>`<div><b>${v}</b><span>${l}</span></div>`;
+  return `<section class="block"><div class="streak2 ${st.alive?'':'cold'}"><img src="streak.webp" alt="" aria-hidden="true">
+  <div class="sk-m"><div class="sk-n"><b>${st.cur}</b><span>week${st.cur===1?'':'s'}<br>streak</span></div>${!st.alive&&st.cur?`<span class="small sk-w">Train this week to keep it alive</span>`:''}</div>
+  <div class="sk-s">${stat(st.best,'Best streak')}${stat(st.total,'Total workouts')}${stat(goal?`${st.thisWeek}/${goal}`:st.thisWeek,'This week')}</div></div></section>`;
 }
 const WSTEPS=['start','about','goal','freq','length','equip','focus','misc'];
 function wizTile(act,val,on,b,sp,cls=''){return `<button class="wtile ${cls} ${on?'on':''}" data-a="${act}" data-v="${val}" aria-pressed="${on}">${b}${sp?`<span>${sp}</span>`:''}</button>`}
