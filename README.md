@@ -9,12 +9,15 @@ A free, private workout tracker inspired by Hevy and Alpha Progress. It runs ent
 - **How-to photos and steps** for 737 exercises (start and finish photos plus written instructions), with form cues and a video-demo link for every exercise. Tap the figure, "How to", or the ? in the picker.
 - **Supersets and giant sets**: link exercises in a workout or routine. The rest timer waits until the round is done and tells you which exercise is next.
 - **Drop sets** in one tap (about 20% lighter, no rest), plus warm-up and failure set types.
+- **RPE bar** above the keyboard while you enter a set: tap 5–10 to rate effort (tap ? for what each number means). It feeds Smart Weights.
 - **Rest timer** with smart defaults that keeps counting after it ends, so every set records how long you actually rested.
 - **Warm-up calculator**, **barbell calculator with a picture of the loaded bar**, **kg/lb switch** and a **previous column**.
 
 - **Quick log**: type workouts the way you'd write them, one exercise per line (`Bench 135x8 135x8 135x7`, `Squat 3x5@225`, `Pull-ups BW x10 x8`, `Plank 60s`). Date lines start new workouts. Each line is matched to the right exercise, with its how-to and video.
 - **Import photo**: photograph a notebook page or printed log and the app reads it into Quick log for you to check before saving (needs an internet connection; printed text reads best).
 - **Last time** line on every exercise with one-tap **Match**, and **Smart Weights** that go up by the right step for each lift and hold when you miss.
+
+- **Exercise pages** show muscles worked (front/back figures with primary and secondary muscles), your strength rank for that lift with what it takes to reach the next level, and your strength progress chart.
 
 **Plans**
 - **Plan generator**: answer a few questions (sex, experience, body weight, goal, days per week, session length, equipment, focus muscles, plan length) and get a complete program. It picks a split (full body, upper/lower, push/pull/legs or a mix), chooses exercises for your equipment, and sets sets and rep ranges from your goal and experience. Short sessions pair accessories as supersets.
