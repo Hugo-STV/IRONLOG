@@ -562,6 +562,7 @@ svg.hexb.lock{filter:none;background:none}.hx-in{fill:#12142a}.hx-q{font:800 22p
 .bdg{position:relative;display:inline-grid;place-items:center;height:var(--bh);width:calc(var(--bh)*.671);flex:none}.bdg img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(124,58,237,.35))}
 .bdg.lock img{filter:grayscale(1) brightness(.28) blur(1.5px)}.bdg.lock b{position:absolute;font:800 calc(var(--bh)*.3) var(--f-display);color:#8a93a8}
 .journey .jr .bdg{--bh:120px!important}.journey .jr.lock .bdg{--bh:96px!important}
+.cloud{gap:10px;border-color:color-mix(in srgb,#22c55e 35%,var(--line))}.cloud .fx-h>div{display:grid;gap:2px}.cloud .fx-h b{font-size:16px}.cbsteps{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--muted)}.cbsteps a{color:var(--accent);font-weight:700}.cbsteps b{color:var(--ink)}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
 .fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
@@ -2333,8 +2334,35 @@ async function recoverFromMirror(){
   else if(!FRESH)idbSet('state',JSON.stringify(S));
 }
 let mirrorT=null;
-function save(){const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}if(!realCount(S))return;clearTimeout(mirrorT);mirrorT=setTimeout(()=>idbSet('state',j),400)}
+function save(){const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}if(!realCount(S))return;clearTimeout(mirrorT);mirrorT=setTimeout(()=>idbSet('state',j),400);cbSchedule()}
 function askPersist(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persisted().then(p=>{if(!p)return navigator.storage.persist()}).catch(()=>{})}catch(e){}}
+
+/* ---------- Automatic cloud backup to the user's own private GitHub gist ---------- */
+const CB_KEY='peak.cloud',CB_DESC='Peak workout backup (private)',CB_FILE='peak-backup.json';
+function cbGet(){try{return JSON.parse(localStorage.getItem(CB_KEY))||null}catch(e){return null}}
+function cbSet(o){try{o?localStorage.setItem(CB_KEY,JSON.stringify(o)):localStorage.removeItem(CB_KEY)}catch(e){}if(o)idbSet('cloud',JSON.stringify(o))}
+async function gh(tok,path,opt={}){const r=await fetch('https://api.github.com'+path,Object.assign({},opt,{headers:{Authorization:'token '+tok,Accept:'application/vnd.github+json','Content-Type':'application/json'}}));
+  if(r.status===401)throw new Error('That key was rejected by GitHub. Make a new one and make sure "gist" is ticked.');if(!r.ok)throw new Error('GitHub error '+r.status);return r.status===204?null:r.json()}
+async function cbFind(tok){for(let pg=1;pg<=5;pg++){const L=await gh(tok,`/gists?per_page=100&page=${pg}`);const g=L.find(x=>x.description===CB_DESC&&x.files[CB_FILE]);if(g)return g.id;if(L.length<100)break}return null}
+async function cbPull(tok,id){const g=await gh(tok,'/gists/'+id);const f=g.files[CB_FILE];if(!f)return null;const txt=f.truncated?await (await fetch(f.raw_url)).text():f.content;return JSON.parse(txt)}
+let CB_T=null,CB_BUSY=false;
+async function cbPush(force){const c=cbGet();if(!c||!c.tok||CB_BUSY)return;const n=realCount(S);if(!n)return;
+  if(!force&&c.n&&n<c.n*0.5){c.err=`Paused: this phone has ${n} workouts but your backup has ${c.n}. Open Settings to choose.`;cbSet(c);return}
+  CB_BUSY=true;try{const body={description:CB_DESC,files:{[CB_FILE]:{content:JSON.stringify(S)}}};
+    if(c.id){await gh(c.tok,'/gists/'+c.id,{method:'PATCH',body:JSON.stringify(body)})}else{const g=await gh(c.tok,'/gists',{method:'POST',body:JSON.stringify(Object.assign(body,{public:false}))});c.id=g.id}
+    c.last=Date.now();c.n=n;c.err=null;cbSet(c)}catch(e){c.err=e.message==='Failed to fetch'?'Offline: will retry automatically':e.message;cbSet(c)}finally{CB_BUSY=false}
+  if(UI.view==='prefs'&&!S.active)render()}
+function cbSchedule(ms){if(!cbGet())return;clearTimeout(CB_T);CB_T=setTimeout(()=>cbPush(),ms||8000)}
+async function cbRecoverKey(){if(cbGet())return;try{const v=await idbGet('cloud');if(v){localStorage.setItem(CB_KEY,v)}}catch(e){}}
+function cloudBox(){const c=cbGet();const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
+  if(!c)return `<div class="hcard cloud"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>Automatic cloud backup</b><span class="muted small">Off</span></div></div>
+  <span class="small">After every change, Peak saves a copy to a private file in <b>your own GitHub account</b>. If this phone ever loses its data, paste your key here and everything comes back. No files to handle.</span>
+  <ol class="small cbsteps"><li><a href="https://github.com/settings/tokens/new?scopes=gist&description=Peak%20backup" target="_blank" rel="noopener">Tap here to make a backup key on GitHub</a> (signed in to GitHub).</li><li>Set <b>Expiration</b> to <b>No expiration</b>. "gist" is already ticked. Tap <b>Generate token</b> and copy it.</li><li>Paste it below and tap Turn on. Save the key in your Notes too: it's what restores your data on a new phone.</li></ol>
+  <div style="display:flex;gap:8px"><input class="input mono" id="cbtok" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0" aria-label="GitHub backup key"><button class="btn primary" data-a="cbConnect">Turn on</button></div></div>`;
+  return `<div class="hcard cloud on"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>Automatic cloud backup</b><span class="small" style="color:${c.err?'#f59e0b':'#4ade80'}">${c.err?esc(c.err):c.last?`On · last backup ${ago(c.last)} · ${c.n} workouts`:'On · first backup pending'}</span></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-a="cbNow">Back up now</button><button class="btn sm" data-a="cbRestore">Restore from cloud</button><button class="btn sm ghost" data-a="cbOff">Turn off</button></div></div>`}
+function restoreBanner(){if(cbGet()||realCount(S))return '';return `<div class="banner"><p><b>Had workouts before?</b> If you turned on cloud backup, you can bring them back in one tap.</p><button class="btn sm" data-a="go" data-h="prefs">Restore</button></div>`}
+
 const daysSince=t=>t?Math.floor((Date.now()-t)/DAY):null;
 
 /* ---------- units ---------- */
@@ -3614,6 +3642,7 @@ function render(){
   renderSheet();renderRest();
 }
 function sampleBanner(){
+  const rb=restoreBanner();if(rb)return rb;
   const n=S.workouts.filter(w=>w.sample).length;if(!n)return '';
   return `<div class="banner"><p><b>Example data.</b> ${n} sample workouts are loaded so you can see how history, charts and suggestions look. Clear them before you start logging.</p><button class="btn sm" data-a="clearSample">Clear examples</button></div>`;
 }
@@ -3979,7 +4008,7 @@ function vPrefs(){
   <section class="block"><h2 class="h2">My equipment</h2><p class="muted small" style="margin:0">The exercise picker hides moves you can't do with what's ticked here. Searches still show them, dimmed.</p>
   <div class="chips">${Object.entries(PRESETS).map(([k,p])=>`<button class="chip" data-a="preset" data-p="${k}">${p.label}</button>`).join('')}</div>
   <div class="eqgrid">${Object.entries(EQ).map(([k,l])=>`<label class="eq"><input type="checkbox" id="eq-${k}" data-in="eq" data-k="${k}" ${st.equipment.includes(k)?'checked':''} ${k==='bw'?'disabled':''}>${l}</label>`).join('')}</div></section>
-  <section class="block"><h2 class="h2">Your data</h2><p class="muted small" style="margin:0">Your workouts are stored only on this device, inside this copy of the app. On iPhone, the home-screen app and Safari are separate copies with separate data, and deleting the home-screen icon deletes its data. Save a backup file regularly (Files, iCloud Drive or email) and use Import to restore it.</p>
+  <section class="block"><h2 class="h2">Your data</h2>${cloudBox()}<p class="muted small" style="margin:0">Without cloud backup, your workouts are stored only on this device, inside this copy of the app. On iPhone, the home-screen app and Safari are separate copies with separate data, and deleting the home-screen icon deletes its data. Save a backup file regularly (Files, iCloud Drive or email) and use Import to restore it.</p>
   <p class="small" style="margin:0"><b>${realCount(S)} workouts saved</b> · ${S.lastBackup?`last backup ${daysSince(S.lastBackup)===0?'today':daysSince(S.lastBackup)+' days ago'}`:'<span style="color:var(--danger)">never backed up</span>'}</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-a="saveBackup">Save backup file</button><button class="btn" data-a="exportData">Copy backup text</button><button class="btn" data-a="importData">Import backup</button>${S.workouts.some(w=>w.sample)?'<button class="btn" data-a="clearSample">Clear example data</button>':''}<button class="btn ghost danger" data-a="confirm" data-what="reset">Erase everything</button></div></section>`;
 }
@@ -4275,6 +4304,14 @@ const A={
     const p={id:uid(),name:t.name,weeks:8,deload:exp==='beginner'?0:exp==='advanced'?4:5,period:false,rir:false,notes:t.desc,days:order.map(i=>days[i]),done:{},tpl:t.id};
     S.routines.push(...routines);S.programs.push(p);S.activeProgram=p.id;coachState().mode='routine';save();B.pid=p.id;B.step='ready';render();window.scrollTo(0,0)},
   rbDone(){UI.rb=null;UI.rtab='routines';render();window.scrollTo(0,0)},
+  async cbConnect(){const tok=(($('#cbtok')||{}).value||'').trim();if(!tok){toast('Paste your GitHub key first');return}toast('Connecting…');
+    try{const id=await cbFind(tok);let restored=0;if(id){const cl=await cbPull(tok,id);if(cl&&realCount(cl)>realCount(S)){S=cl;normalize();restored=realCount(cl);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}idbSet('state',JSON.stringify(S))}}
+      cbSet({tok,id,n:restored||0});if(!restored)await cbPush(true);else{const c=cbGet();c.last=Date.now();c.n=restored;cbSet(c)}render();toast(restored?`Restored ${restored} workouts from your cloud backup`:'Cloud backup is on')}catch(e){toast(e.message==='Failed to fetch'?'No connection. Try again online.':e.message)}},
+  async cbNow(){toast('Backing up…');await cbPush(true);const c=cbGet();toast(c&&c.err?c.err:'Backed up');render()},
+  async cbRestore(){const c=cbGet();if(!c)return;toast('Checking your backup…');try{const id=c.id||await cbFind(c.tok);if(!id){toast('No backup found yet');return}const cl=await cbPull(c.tok,id);if(!cl||!realCount(cl)){toast('The backup is empty');return}
+    if(realCount(cl)<realCount(S)&&!confirm(`Your backup has ${realCount(cl)} workouts but this phone has ${realCount(S)}. Replace this phone's data with the backup?`))return;
+    S=cl;normalize();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}idbSet('state',JSON.stringify(S));c.id=id;c.n=realCount(S);c.err=null;cbSet(c);render();toast(`Restored ${realCount(S)} workouts`)}catch(e){toast(e.message)}},
+  cbOff(){cbSet(null);try{idbSet('cloud','')}catch(e){}render();toast('Cloud backup turned off. Your backup on GitHub is kept.')},
   coachSettings(){UI.sheet={kind:'coachset'};renderSheet()},
   cset(d){S.profile=Object.assign(S.profile||{},{[d.k]:d.k==='exp'||d.k==='goal'?d.v:+d.v});save();render();renderSheet()},
   cmode(d,el,ev){if(ev&&ev.target.closest('.cm-m')){UI.sheet=null;renderSheet();A.rtab({t:'routines'});return}const C=coachState();
@@ -4503,8 +4540,8 @@ window.addEventListener('hashchange',route);
 (()=>{const v=window.visualViewport;if(!v)return;const r=document.documentElement;const f=()=>{r.style.setProperty('--vvh',v.height+'px');r.style.setProperty('--vvt',v.offsetTop+'px')};v.addEventListener('resize',f);v.addEventListener('scroll',f);f()})();
 document.body.insertAdjacentHTML('afterbegin',bodySprite()+peakDefs());
 load();applySkin();route();setInterval(tick,1000);
-setTimeout(()=>{try{recoverFromMirror().catch(()=>{});askPersist()}catch(e){}},300);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&S){try{idbSet('state',JSON.stringify(S))}catch(e){}}});
+setTimeout(()=>{try{recoverFromMirror().catch(()=>{});askPersist();cbRecoverKey().then(()=>{if(UI.view==='prefs'||!realCount(S))render();cbSchedule(3000)})}catch(e){}},300);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S){try{idbSet('state',JSON.stringify(S))}catch(e){}if(cbGet()&&CB_T){clearTimeout(CB_T);cbPush()}}});
 })();
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol==='https:'){

@@ -54,6 +54,9 @@ Your workout data never goes to GitHub. The repo only holds the app; your logs l
 
 ## Keep your data safe
 
+Turn on **Settings → Your data → Automatic cloud backup**. After every change, Peak saves a copy to a private gist in your own GitHub account (using a key with only the `gist` permission). If the phone ever loses its data, paste the key again and tap Turn on to restore everything.
+
+
 Browser storage can be wiped if you clear site data or uninstall the browser. Every few weeks, go to **Settings → Export backup** and save the file (or copy the text into a note). Use **Import backup** to restore it, or to move your history to a new phone.
 
 ## Updating the app
