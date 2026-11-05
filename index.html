@@ -562,7 +562,7 @@ svg.hexb.lock{filter:none;background:none}.hx-in{fill:#12142a}.hx-q{font:800 22p
 .bdg{position:relative;display:inline-grid;place-items:center;height:var(--bh);width:calc(var(--bh)*.671);flex:none}.bdg img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(124,58,237,.35))}
 .bdg.lock img{filter:grayscale(1) brightness(.28) blur(1.5px)}.bdg.lock b{position:absolute;font:800 calc(var(--bh)*.3) var(--f-display);color:#8a93a8}
 .journey .jr .bdg{--bh:120px!important}.journey .jr.lock .bdg{--bh:96px!important}
-.cloud{gap:10px;border-color:color-mix(in srgb,#22c55e 35%,var(--line))}.cloud .fx-h>div{display:grid;gap:2px}.cloud .fx-h b{font-size:16px}.cbsteps{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--muted)}.cbsteps a{color:var(--accent);font-weight:700}.cbsteps b{color:var(--ink)}
+.cloud{gap:10px;border-color:color-mix(in srgb,#22c55e 35%,var(--line))}.cloud .fx-h>div{display:grid;gap:2px}.cloud .fx-h b{font-size:16px}.lform{display:grid;gap:8px}.lform .row-between .linkbtn{padding:4px 0}.cbsteps{margin:0;padding-left:20px;display:grid;gap:6px;color:var(--muted)}.cbsteps a{color:var(--accent);font-weight:700}.cbsteps b{color:var(--ink)}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
 .fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
@@ -2334,35 +2334,85 @@ async function recoverFromMirror(){
   else if(!FRESH)idbSet('state',JSON.stringify(S));
 }
 let mirrorT=null;
-function save(){const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}if(!realCount(S))return;clearTimeout(mirrorT);mirrorT=setTimeout(()=>idbSet('state',j),400);cbSchedule()}
+function save(){try{if(realCount(S))S.ctx=ctxNow()}catch(e){}const j=JSON.stringify(S);try{localStorage.setItem(KEY,j)}catch(e){}if(!realCount(S))return;clearTimeout(mirrorT);mirrorT=setTimeout(()=>idbSet('state',j),400);cbSchedule()}
 function askPersist(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persisted().then(p=>{if(!p)return navigator.storage.persist()}).catch(()=>{})}catch(e){}}
 
-/* ---------- Automatic cloud backup to the user's own private GitHub gist ---------- */
-const CB_KEY='peak.cloud',CB_DESC='Peak workout backup (private)',CB_FILE='peak-backup.json';
-function cbGet(){try{return JSON.parse(localStorage.getItem(CB_KEY))||null}catch(e){return null}}
-function cbSet(o){try{o?localStorage.setItem(CB_KEY,JSON.stringify(o)):localStorage.removeItem(CB_KEY)}catch(e){}if(o)idbSet('cloud',JSON.stringify(o))}
-async function gh(tok,path,opt={}){const r=await fetch('https://api.github.com'+path,Object.assign({},opt,{headers:{Authorization:'token '+tok,Accept:'application/vnd.github+json','Content-Type':'application/json'}}));
-  if(r.status===401)throw new Error('That key was rejected by GitHub. Make a new one and make sure "gist" is ticked.');if(!r.ok)throw new Error('GitHub error '+r.status);return r.status===204?null:r.json()}
-async function cbFind(tok){for(let pg=1;pg<=5;pg++){const L=await gh(tok,`/gists?per_page=100&page=${pg}`);const g=L.find(x=>x.description===CB_DESC&&x.files[CB_FILE]);if(g)return g.id;if(L.length<100)break}return null}
-async function cbPull(tok,id){const g=await gh(tok,'/gists/'+id);const f=g.files[CB_FILE];if(!f)return null;const txt=f.truncated?await (await fetch(f.raw_url)).text():f.content;return JSON.parse(txt)}
-let CB_T=null,CB_BUSY=false;
-async function cbPush(force){const c=cbGet();if(!c||!c.tok||CB_BUSY)return;const n=realCount(S);if(!n)return;
-  if(!force&&c.n&&n<c.n*0.5){c.err=`Paused: this phone has ${n} workouts but your backup has ${c.n}. Open Settings to choose.`;cbSet(c);return}
-  CB_BUSY=true;try{const body={description:CB_DESC,files:{[CB_FILE]:{content:JSON.stringify(S)}}};
-    if(c.id){await gh(c.tok,'/gists/'+c.id,{method:'PATCH',body:JSON.stringify(body)})}else{const g=await gh(c.tok,'/gists',{method:'POST',body:JSON.stringify(Object.assign(body,{public:false}))});c.id=g.id}
-    c.last=Date.now();c.n=n;c.err=null;cbSet(c)}catch(e){c.err=e.message==='Failed to fetch'?'Offline: will retry automatically':e.message;cbSet(c)}finally{CB_BUSY=false}
-  if(UI.view==='prefs'&&!S.active)render()}
-function cbSchedule(ms){if(!cbGet())return;clearTimeout(CB_T);CB_T=setTimeout(()=>cbPush(),ms||8000)}
-async function cbRecoverKey(){if(cbGet())return;try{const v=await idbGet('cloud');if(v){localStorage.setItem(CB_KEY,v)}}catch(e){}}
-function cloudBox(){const c=cbGet();const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
-  if(!c)return `<div class="hcard cloud"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>Automatic cloud backup</b><span class="muted small">Off</span></div></div>
-  <span class="small">After every change, Peak saves a copy to a private file in <b>your own GitHub account</b>. If this phone ever loses its data, paste your key here and everything comes back. No files to handle.</span>
-  <ol class="small cbsteps"><li><a href="https://github.com/settings/tokens/new?scopes=gist&description=Peak%20backup" target="_blank" rel="noopener">Tap here to make a backup key on GitHub</a> (signed in to GitHub).</li><li>Set <b>Expiration</b> to <b>No expiration</b>. "gist" is already ticked. Tap <b>Generate token</b> and copy it.</li><li>Paste it below and tap Turn on. Save the key in your Notes too: it's what restores your data on a new phone.</li></ol>
-  <div style="display:flex;gap:8px"><input class="input mono" id="cbtok" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0" aria-label="GitHub backup key"><button class="btn primary" data-a="cbConnect">Turn on</button></div></div>`;
-  return `<div class="hcard cloud on"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>Automatic cloud backup</b><span class="small" style="color:${c.err?'#f59e0b':'#4ade80'}">${c.err?esc(c.err):c.last?`On · last backup ${ago(c.last)} · ${c.n} workouts`:'On · first backup pending'}</span></div></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-a="cbNow">Back up now</button><button class="btn sm" data-a="cbRestore">Restore from cloud</button><button class="btn sm ghost" data-a="cbOff">Turn off</button></div></div>`}
-function restoreBanner(){if(cbGet()||realCount(S))return '';return `<div class="banner"><p><b>Had workouts before?</b> If you turned on cloud backup, you can bring them back in one tap.</p><button class="btn sm" data-a="go" data-h="prefs">Restore</button></div>`}
-
+/* ---------- Account sync ----------
+   The app talks to the backend only through CLOUD (signIn, signUp, reset, pull, commit).
+   To move to Supabase, PocketBase on a NAS, or anything else later, write another object with
+   the same five functions and point CLOUD at it. The data is plain JSON: one document per
+   workout plus one "meta" document for everything else. */
+const FB={apiKey:'AIzaSyCk3UOeS-w8HvhMDyZepAK5PsABTkWI39U',projectId:'peak-c4dfb'}; // Firebase web config (public by design; the security rules protect the data)
+const ACCT_K='peak.acct',SYNC_K='peak.sync';
+const jget=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
+const jset=(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const acct=()=>jget(ACCT_K);
+const cloudReady=()=>!!(FB.apiKey&&FB.projectId);
+function authMsg(m){m=String(m||'');if(/EMAIL_EXISTS/.test(m))return 'That email already has an account. Sign in instead.';if(/INVALID_LOGIN|INVALID_PASSWORD|EMAIL_NOT_FOUND|INVALID_CREDENTIAL/.test(m))return 'Wrong email or password.';
+  if(/WEAK_PASSWORD/.test(m))return 'Use a password of at least 6 characters.';if(/INVALID_EMAIL|MISSING_EMAIL/.test(m))return 'Enter a valid email address.';if(/MISSING_PASSWORD/.test(m))return 'Enter your password.';
+  if(/TOO_MANY/.test(m))return 'Too many attempts. Wait a few minutes and try again.';if(/API_KEY|API key not valid/i.test(m))return 'Peak\u2019s database key is wrong. Tell me and I\u2019ll fix it.';if(/OPERATION_NOT_ALLOWED|ADMIN_ONLY/.test(m))return 'Email sign-in isn’t turned on in Firebase yet.';return m||'Something went wrong. Try again.'}
+const FIREBASE={
+  async auth(path,body){let r;try{r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:${path}?key=${FB.apiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){throw new Error('No connection. Try again online.')}
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(authMsg(j.error&&j.error.message));return j},
+  sess(j){return {uid:j.localId,email:j.email,rt:j.refreshToken,it:j.idToken,exp:Date.now()+((+j.expiresIn||3600)-60)*1000}},
+  async signIn(email,pw){return this.sess(await this.auth('signInWithPassword',{email,password:pw,returnSecureToken:true}))},
+  async signUp(email,pw){return this.sess(await this.auth('signUp',{email,password:pw,returnSecureToken:true}))},
+  async reset(email){await this.auth('sendOobCode',{requestType:'PASSWORD_RESET',email})},
+  async token(a){if(a.it&&a.exp>Date.now())return a.it;const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB.apiKey}`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(a.rt)});
+    const j=await r.json().catch(()=>({}));if(!r.ok){const e=new Error('Signed out. Sign in again.');e.out=true;throw e}a.it=j.id_token;a.rt=j.refresh_token;a.exp=Date.now()+((+j.expires_in||3600)-60)*1000;const c=acct();if(c&&c.uid===a.uid){c.it=a.it;c.rt=a.rt;c.exp=a.exp;jset(ACCT_K,c)}return a.it},
+  base(){return `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`},
+  async req(a,url,opt={}){const t=await this.token(a);const r=await fetch(url,Object.assign({},opt,{headers:{Authorization:'Bearer '+t,'Content-Type':'application/json'}}));if(r.status===404)return null;if(!r.ok)throw new Error('Sync error '+r.status);return r.json()},
+  async pull(a){const out={w:{},meta:null};let pt='';do{const j=await this.req(a,`${this.base()}/users/${a.uid}/w?pageSize=300${pt?'&pageToken='+encodeURIComponent(pt):''}`);
+      ((j&&j.documents)||[]).forEach(d=>{const f=d.fields||{};out.w[d.name.split('/').pop()]={j:f.j?f.j.stringValue:null,del:!!(f.del&&f.del.booleanValue)}});pt=(j&&j.nextPageToken)||''}while(pt);
+    const m=await this.req(a,`${this.base()}/users/${a.uid}/meta/state`);out.meta=m&&m.fields&&m.fields.j?m.fields.j.stringValue:null;return out},
+  async commit(a,writes){for(let i=0;i<writes.length;i+=400){const ch=writes.slice(i,i+400).map(x=>({update:{name:`projects/${FB.projectId}/databases/(default)/documents/users/${a.uid}/${x.path}`,fields:x.del?{del:{booleanValue:true}}:{j:{stringValue:x.j},del:{booleanValue:false}}}}));
+    await this.req(a,`${this.base()}:commit`,{method:'POST',body:JSON.stringify({writes:ch})})}}
+};
+const CLOUD=FIREBASE;
+const hsh=s=>{let h=5381;for(let i=0;i<s.length;i++)h=(h*33^s.charCodeAt(i))>>>0;return h.toString(36)+':'+s.length};
+const hw=w=>hsh(JSON.stringify(w));
+function metaObj(){const {workouts,ctx,...m}=S;return Object.assign({},m,{bw:(m.bw||[]).filter(b=>!b.sample)})}
+const metaJ=()=>JSON.stringify(metaObj());
+function unionBy(a,b,k){const seen=new Set((a||[]).map(x=>x[k]));return (a||[]).concat((b||[]).filter(x=>!seen.has(x[k])))}
+function persistLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}idbSet('state',JSON.stringify(S));USE=null}
+let SYNC_BUSY=false,SYNC_T=null,SYNC_AGAIN=false;
+async function syncNow(){const a=acct();if(!a||!cloudReady())return;if(SYNC_BUSY){SYNC_AGAIN=true;return}SYNC_BUSY=true;clearTimeout(SYNC_T);SYNC_T=null;
+  try{const R=await CLOUD.pull(a);const map=jget(SYNC_K)||{w:{},m:null};let changed=false;
+    if(!realCount(S)){const ws=Object.values(R.w).filter(x=>!x.del&&x.j).map(x=>JSON.parse(x.j));
+      if(ws.length||R.meta){const keepActive=S.active;S=Object.assign(R.meta?JSON.parse(R.meta):metaObj(),{workouts:ws});if(!S.active&&keepActive)S.active=keepActive;normalize();changed=true}}
+    else{const loc=new Map(S.workouts.map(w=>[w.id,w]));
+      for(const [id,x] of Object.entries(R.w)){const L=loc.get(id);
+        if(x.del){if(L&&(!(id in map.w)||map.w[id]===hw(L))){S.workouts=S.workouts.filter(w=>w.id!==id);changed=true}continue}
+        if(!x.j)continue;
+        if(!L){if(!(id in map.w)){S.workouts.push(JSON.parse(x.j));changed=true}}
+        else if(hw(L)!==hsh(x.j)&&map.w[id]===hw(L)){S.workouts=S.workouts.map(w=>w.id===id?JSON.parse(x.j):w);changed=true}}
+      if(R.meta){const lh=hsh(metaJ()),rh=hsh(R.meta);if(lh!==rh){const rem=JSON.parse(R.meta);
+        if(map.m===lh){S=Object.assign(rem,{workouts:S.workouts});changed=true}
+        else if(!map.m){const loc0=metaObj();['routines','programs','custom'].forEach(k=>rem[k]=unionBy(rem[k],loc0[k],'id'));rem.bw=unionBy(rem.bw,loc0.bw,'t');S=Object.assign(rem,{workouts:S.workouts,active:loc0.active||rem.active});changed=true}}}}
+    if(changed){S.workouts.sort((x,y)=>x.start-y.start);normalize();persistLocal()}
+    const writes=[],nm={w:{},m:null};
+    S.workouts.filter(w=>!w.sample).forEach(w=>{const h=hw(w);nm.w[w.id]=h;const r=R.w[w.id];if(!r||r.del||!r.j||hsh(r.j)!==h)writes.push({path:'w/'+w.id,j:JSON.stringify(w)})});
+    Object.keys(map.w).forEach(id=>{if(!nm.w[id]&&R.w[id]&&!R.w[id].del)writes.push({path:'w/'+id,del:true})});
+    const mj=metaJ();nm.m=hsh(mj);if(!R.meta||hsh(R.meta)!==nm.m)writes.push({path:'meta/state',j:mj});
+    if(writes.length)await CLOUD.commit(a,writes);
+    jset(SYNC_K,nm);const c=acct();if(c){c.last=Date.now();c.n=realCount(S);c.err=null;jset(ACCT_K,c)}
+    if(changed&&!S.active)render();else if(UI.view==='prefs'&&!S.active)render();
+  }catch(e){const c=acct();if(c){if(e.out){jset(ACCT_K,null);toast('Signed out. Sign in again to keep syncing.')}else{c.err=e.message==='Failed to fetch'?'Offline: will sync when you’re back online':e.message;jset(ACCT_K,c)}}}
+  finally{SYNC_BUSY=false;if(SYNC_AGAIN){SYNC_AGAIN=false;setTimeout(syncNow,500)}}}
+function cbSchedule(ms){if(!acct()||!cloudReady())return;clearTimeout(SYNC_T);SYNC_T=setTimeout(syncNow,ms||4000)}
+function ctxNow(){const u=navigator.userAgent;const sa=!!((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone);
+  const br=/Ddg|DuckDuckGo/i.test(u)?'DuckDuckGo':navigator.brave?'Brave':/CriOS|Chrome\//.test(u)&&!/Edg/.test(u)?'Chrome':/FxiOS|Firefox/.test(u)?'Firefox':/EdgiOS|Edg\//.test(u)?'Edge':/Safari/.test(u)?'Safari':'browser';
+  const os=/iPhone|iPad|iPod/.test(u)?'iPhone':/Android/.test(u)?'Android':'computer';return {sa,br,os,where:sa?`${os} home-screen app`:`${br} tab on ${os}`}}
+const ago=t=>{const m=Math.round((Date.now()-t)/6e4);return m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' days ago'};
+function loginForm(){return `<form data-form="login" class="lform" autocomplete="on"><input class="input" name="email" type="email" autocomplete="username" placeholder="Email" aria-label="Email" autocapitalize="off">
+  <input class="input" name="password" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" aria-label="Password">
+  <button class="btn primary bigb">Sign in</button><div class="row-between"><button type="button" class="linkbtn" data-a="acctUp">Create account</button><button type="button" class="linkbtn" data-a="acctReset">Forgot password?</button></div></form>`}
+function cloudBox(){if(!cloudReady())return `<div class="hcard cloud"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>Account &amp; sync</b><span class="muted small">Not connected to a database yet</span></div></div></div>`;
+  const a=acct();if(!a)return `<div class="hcard cloud"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>Account &amp; sync</b><span class="muted small">Sign in so your workouts are saved to your account and synced between phones.</span></div></div>${loginForm()}</div>`;
+  return `<div class="hcard cloud on"><div class="fx-h"><span class="ctile-i sm" style="--c:#22c55e">${pic('up',20)}</span><div><b>${esc(a.email)}</b><span class="small" style="color:${a.err?'#f59e0b':'#4ade80'}">${a.err?esc(a.err):a.last?`Synced ${ago(a.last)} · ${a.n} workouts`:'Syncing…'}</span></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-a="acctSync">Sync now</button><button class="btn sm ghost" data-a="acctOut">Sign out</button></div></div>`}
+function shLogin(){return sheet('Sign in to Peak',`<p style="margin:0">Your workouts are saved to your account. Sign in to get them back${realCount(S)?'':' on this phone'}.</p>${loginForm()}`,`<button class="btn" data-a="loginLater">Not now</button>`,{})}
+function restoreBanner(){if(!cloudReady()||acct()||realCount(S))return '';return `<div class="banner"><p><b>Have an account?</b> Sign in to get your workouts back.</p><button class="btn sm" data-a="openLogin">Sign in</button></div>`}
 const daysSince=t=>t?Math.floor((Date.now()-t)/DAY):null;
 
 /* ---------- units ---------- */
@@ -3814,7 +3864,7 @@ function vEditProgram(){
   <div class="field"><label class="label" for="pnotes">Notes (optional)</label><input class="input" id="pnotes" data-in="pnotes" value="${esc(p.notes||'')}" placeholder="Goal, schedule, anything to remember"></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" style="flex:1" data-a="saveProgram">Save program</button><button class="btn" data-a="cancelProgram">Cancel</button></div></section>`;
 }
-function backupBanner(){const n=realCount(S);if(n<1)return '';const d=daysSince(S.lastBackup);if(d!=null&&d<7)return '';
+function backupBanner(){const n=realCount(S);if(n<1)return '';const cb=acct();if(cb&&!cb.err)return '';const d=daysSince(S.lastBackup);if(d!=null&&d<7)return '';
   return `<div class="banner" style="background:var(--over)"><p><b>${d==null?'You haven\'t backed up yet.':`Last backup ${d} days ago.`}</b> Your ${n} workout${n>1?'s are':' is'} stored only on this device. Save a backup file so you can't lose them.</p><button class="btn sm" data-a="saveBackup">Back up now</button></div>`}
 function streakCard(){
   const st=streaks();if(!st.total)return '';
@@ -4008,7 +4058,7 @@ function vPrefs(){
   <section class="block"><h2 class="h2">My equipment</h2><p class="muted small" style="margin:0">The exercise picker hides moves you can't do with what's ticked here. Searches still show them, dimmed.</p>
   <div class="chips">${Object.entries(PRESETS).map(([k,p])=>`<button class="chip" data-a="preset" data-p="${k}">${p.label}</button>`).join('')}</div>
   <div class="eqgrid">${Object.entries(EQ).map(([k,l])=>`<label class="eq"><input type="checkbox" id="eq-${k}" data-in="eq" data-k="${k}" ${st.equipment.includes(k)?'checked':''} ${k==='bw'?'disabled':''}>${l}</label>`).join('')}</div></section>
-  <section class="block"><h2 class="h2">Your data</h2>${cloudBox()}<p class="muted small" style="margin:0">Without cloud backup, your workouts are stored only on this device, inside this copy of the app. On iPhone, the home-screen app and Safari are separate copies with separate data, and deleting the home-screen icon deletes its data. Save a backup file regularly (Files, iCloud Drive or email) and use Import to restore it.</p>
+  <section class="block"><h2 class="h2">Your data</h2>${cloudBox()}<p class="muted small" style="margin:0">Without an account, your workouts are stored only on this device, inside this copy of the app. On iPhone, the home-screen app and Safari are separate copies with separate data, and deleting the home-screen icon deletes its data. Save a backup file regularly (Files, iCloud Drive or email) and use Import to restore it.</p>
   <p class="small" style="margin:0"><b>${realCount(S)} workouts saved</b> · ${S.lastBackup?`last backup ${daysSince(S.lastBackup)===0?'today':daysSince(S.lastBackup)+' days ago'}`:'<span style="color:var(--danger)">never backed up</span>'}</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-a="saveBackup">Save backup file</button><button class="btn" data-a="exportData">Copy backup text</button><button class="btn" data-a="importData">Import backup</button>${S.workouts.some(w=>w.sample)?'<button class="btn" data-a="clearSample">Clear example data</button>':''}<button class="btn ghost danger" data-a="confirm" data-what="reset">Erase everything</button></div></section>`;
 }
@@ -4018,7 +4068,7 @@ function sheet(title,body,foot,o={}){const back=UI.sheet&&UI.sheet.back;return `
 function renderSheet(){
   const s=UI.sheet;const el=$('#sheet');if(!s){el.innerHTML='';document.body.style.overflow='';return}
   document.body.style.overflow='hidden';
-  const fns={quick:shQuick,picker:shPicker,exMenu:shExMenu,workout:shWorkout,exercise:shExercise,summary:shSummary,confirm:shConfirm,export:shExport,import:shImport,custom:shCustom,bar:shBar,warm:shWarm,focus:shFocus,muscle:shMuscle,sgroup:shSGroup,sInfo:shSInfo,journey:shJourney,rpe:shRpe,coachset:shCoachSet,cconfirm:shCConfirm,histpick:shHistPick,quickgen:shQuickGen,treview:shTReview,sreview:shSReview};
+  const fns={quick:shQuick,picker:shPicker,exMenu:shExMenu,workout:shWorkout,exercise:shExercise,summary:shSummary,confirm:shConfirm,export:shExport,import:shImport,custom:shCustom,bar:shBar,warm:shWarm,focus:shFocus,muscle:shMuscle,sgroup:shSGroup,sInfo:shSInfo,journey:shJourney,rpe:shRpe,login:shLogin,coachset:shCoachSet,cconfirm:shCConfirm,histpick:shHistPick,quickgen:shQuickGen,treview:shTReview,sreview:shSReview};
   el.innerHTML=fns[s.kind](s);
 }
 function shPicker(){
@@ -4304,14 +4354,16 @@ const A={
     const p={id:uid(),name:t.name,weeks:8,deload:exp==='beginner'?0:exp==='advanced'?4:5,period:false,rir:false,notes:t.desc,days:order.map(i=>days[i]),done:{},tpl:t.id};
     S.routines.push(...routines);S.programs.push(p);S.activeProgram=p.id;coachState().mode='routine';save();B.pid=p.id;B.step='ready';render();window.scrollTo(0,0)},
   rbDone(){UI.rb=null;UI.rtab='routines';render();window.scrollTo(0,0)},
-  async cbConnect(){const tok=(($('#cbtok')||{}).value||'').trim();if(!tok){toast('Paste your GitHub key first');return}toast('Connecting…');
-    try{const id=await cbFind(tok);let restored=0;if(id){const cl=await cbPull(tok,id);if(cl&&realCount(cl)>realCount(S)){S=cl;normalize();restored=realCount(cl);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}idbSet('state',JSON.stringify(S))}}
-      cbSet({tok,id,n:restored||0});if(!restored)await cbPush(true);else{const c=cbGet();c.last=Date.now();c.n=restored;cbSet(c)}render();toast(restored?`Restored ${restored} workouts from your cloud backup`:'Cloud backup is on')}catch(e){toast(e.message==='Failed to fetch'?'No connection. Try again online.':e.message)}},
-  async cbNow(){toast('Backing up…');await cbPush(true);const c=cbGet();toast(c&&c.err?c.err:'Backed up');render()},
-  async cbRestore(){const c=cbGet();if(!c)return;toast('Checking your backup…');try{const id=c.id||await cbFind(c.tok);if(!id){toast('No backup found yet');return}const cl=await cbPull(c.tok,id);if(!cl||!realCount(cl)){toast('The backup is empty');return}
-    if(realCount(cl)<realCount(S)&&!confirm(`Your backup has ${realCount(cl)} workouts but this phone has ${realCount(S)}. Replace this phone's data with the backup?`))return;
-    S=cl;normalize();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}idbSet('state',JSON.stringify(S));c.id=id;c.n=realCount(S);c.err=null;cbSet(c);render();toast(`Restored ${realCount(S)} workouts`)}catch(e){toast(e.message)}},
-  cbOff(){cbSet(null);try{idbSet('cloud','')}catch(e){}render();toast('Cloud backup turned off. Your backup on GitHub is kept.')},
+  openLogin(){UI.sheet={kind:'login'};renderSheet()},
+  loginLater(){UI.loginSkip=true;UI.sheet=null;renderSheet()},
+  async acctIn(d){const root=(d&&d.root)||(UI.sheet&&$('#sheet .sheet'))||document;const em=(root.querySelector('[name=email]')||{}).value||'',pw=(root.querySelector('[name=password]')||{}).value||'';
+    if(!em.trim()||!pw){toast('Enter your email and password');return}toast(d&&d.up?'Creating your account…':'Signing in…');
+    try{const s=await (d&&d.up?CLOUD.signUp(em.trim(),pw):CLOUD.signIn(em.trim(),pw));jset(ACCT_K,s);jset(SYNC_K,null);idbSet('acct',JSON.stringify(s));await syncNow();
+      const c=acct();UI.sheet=null;renderSheet();render();toast(c&&c.err?c.err:`${d&&d.up?'Account created':'Signed in'} · ${realCount(S)} workouts synced`)}catch(e){toast(e.message)}},
+  acctUp(d,el){A.acctIn({up:true,root:el.closest('form')})},
+  async acctReset(d,el){const em=((el.closest('form').querySelector('[name=email]')||{}).value||'').trim();if(!em){toast('Type your email first, then tap Forgot password');return}try{await CLOUD.reset(em);toast('Password reset email sent')}catch(e){toast(e.message)}},
+  async acctSync(){toast('Syncing…');await syncNow();const c=acct();toast(c&&c.err?c.err:'Synced');render()},
+  acctOut(){jset(ACCT_K,null);jset(SYNC_K,null);idbSet('acct','');render();toast('Signed out. Workouts stay on this phone.')},
   coachSettings(){UI.sheet={kind:'coachset'};renderSheet()},
   cset(d){S.profile=Object.assign(S.profile||{},{[d.k]:d.k==='exp'||d.k==='goal'?d.v:+d.v});save();render();renderSheet()},
   cmode(d,el,ev){if(ev&&ev.target.closest('.cm-m')){UI.sheet=null;renderSheet();A.rtab({t:'routines'});return}const C=coachState();
@@ -4507,6 +4559,7 @@ document.addEventListener('input',ev=>{
 document.addEventListener('change',ev=>{const el=ev.target.closest('[data-in]');if(!el)return;const k=el.dataset.in;if(k==='pbw'){const n=pnum(el.value);if(n&&n>0){S.bw.push({t:Date.now(),kg:fromD(n)});save();toast('Body weight logged')}}if(['prof','pbw','recs','perf','ref'].includes(k)&&UI.view==='prefs')render();if(S.active&&(k==='exRest'||k==='exRange'))render();if(k==='pref'&&UI.view==='progress')render();if(k==='pref'&&UI.sheet&&UI.sheet.kind==='exercise')renderSheet()});
 document.addEventListener('submit',ev=>{
   const f=ev.target;ev.preventDefault();
+  if(f.dataset.form==='login'){A.acctIn({root:f});return}
   if(f.dataset.form==='bw'){const n=pnum($('#bwin').value);if(n==null||n<=0){toast('Enter your weight as a number');return}S.bw.push({t:Date.now(),kg:fromD(n)});save();render();toast('Body weight logged')}
   if(f.dataset.form==='custom'){const fd=new FormData(f);const name=String(fd.get('name')||'').trim();if(!name)return;let id='c-'+slug(name);if(EXM[id])id+='-'+uid().slice(0,4);S.custom.push({id,name,muscle:fd.get('muscle'),type:fd.get('type'),eq:fd.getAll('eq'),custom:true,fm:null});rebuildEx();save();UI.sheet=null;render();toast(`${name} created`)}
 });
@@ -4540,8 +4593,9 @@ window.addEventListener('hashchange',route);
 (()=>{const v=window.visualViewport;if(!v)return;const r=document.documentElement;const f=()=>{r.style.setProperty('--vvh',v.height+'px');r.style.setProperty('--vvt',v.offsetTop+'px')};v.addEventListener('resize',f);v.addEventListener('scroll',f);f()})();
 document.body.insertAdjacentHTML('afterbegin',bodySprite()+peakDefs());
 load();applySkin();route();setInterval(tick,1000);
-setTimeout(()=>{try{recoverFromMirror().catch(()=>{});askPersist();cbRecoverKey().then(()=>{if(UI.view==='prefs'||!realCount(S))render();cbSchedule(3000)})}catch(e){}},300);
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&S){try{idbSet('state',JSON.stringify(S))}catch(e){}if(cbGet()&&CB_T){clearTimeout(CB_T);cbPush()}}});
+setTimeout(()=>{try{recoverFromMirror().catch(()=>{}).then(async()=>{if(!acct()){try{const v=await idbGet('acct');if(v)localStorage.setItem(ACCT_K,v)}catch(e){}}
+  if(acct())syncNow();else if(cloudReady()&&!realCount(S)&&!S.active){render();setTimeout(()=>{if(!acct()&&!realCount(S)&&!UI.sheet&&!UI.loginSkip){UI.sheet={kind:'login'};renderSheet()}},900)}});askPersist()}catch(e){}},300);
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&S){try{idbSet('state',JSON.stringify(S))}catch(e){}if(acct()&&SYNC_T){syncNow()}}else if(acct()&&(!acct().last||Date.now()-acct().last>30000))syncNow()});
 })();
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol==='https:'){
