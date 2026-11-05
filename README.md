@@ -19,7 +19,8 @@ A free, private workout tracker inspired by Hevy and Alpha Progress. It runs ent
 
 - **Exercise pages** show muscles worked (front/back figures with primary and secondary muscles), your strength rank for that lift with what it takes to reach the next level, and your strength progress chart.
 
-**Plans**
+**Plans** (tabs: Coach, Plan, Routines)
+- **Coach**: greeting with your level and goal, a Coach's pick, a weekly report card (A+ to F grade, PRs, volume change, key-lift trends), a strength summary, weekly coaching insights (break-through and stalled lifts, push/pull balance, your best training day, lagging muscles, what's recovered), a workout generated from your recovery and history, and your active program. Quick Workout builds a session for any focus and time; Training Review and Strength Review go deeper.
 - **Plan generator**: answer a few questions (sex, experience, body weight, goal, days per week, session length, equipment, focus muscles, plan length) and get a complete program. It picks a split (full body, upper/lower, push/pull/legs or a mix), chooses exercises for your equipment, and sets sets and rep ranges from your goal and experience. Short sessions pair accessories as supersets.
 - **Expert settings**: Track RIR (rate sets by reps in reserve, with a target per phase), Periodization (Volume → Build → Peak blocks) and Deload weeks.
 - **Custom programs** from your own routines, with a week-by-week grid, skip or reorder days, and an "up next" card on the Workout tab.
