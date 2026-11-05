@@ -21,7 +21,11 @@ A free, private workout tracker inspired by Hevy and Alpha Progress. It runs ent
 - **Expert settings**: Track RIR (rate sets by reps in reserve, with a target per phase), Periodization (Volume → Build → Peak blocks) and Deload weeks.
 - **Custom programs** from your own routines, with a week-by-week grid, skip or reorder days, and an "up next" card on the Workout tab.
 
-**Progress**
+**Progress** (tabs: Overview, This week, Trends, Exercises)
+- **Strength score**: each muscle group ranked Beginner → World Class (levels I–III) from your best lifts vs body weight, a colored body map, per-muscle detail with what you need for the next level, progress over 12 weeks, and goals.
+- **Lifting legacy**: total weight lifted with milestone badges (from a golden retriever to the Titanic) and a journey view.
+- **Your journey** totals, **training split** donut, **top lifts**, **weekly momentum** vs last week, **new records**, **consistency** heatmap and streaks, **volume trend** with an optimal zone, **plateau check**, and a **PR timeline**.
+- **Session impact** after every workout: session volume compared to real objects, muscles worked, strength score change, milestone progress and per-exercise sets.
 - **Weight suggestions** for every set: double progression inside your rep range, an increase when sets felt easy (RIR 3+), a 10% reset after two misses, and starting estimates from your profile for exercises you've never done.
 - **Performance metric** of your choice (1RM, 3RM, 5RM, 8RM, 10RM or 12RM estimate) on charts and records, and a **reference workout** setting (last time you did the exercise, or the same plan day).
 - **Muscle map and balance chart**: a front-and-back body map that lights up each muscle by this week's sets (tap one for details), a 30-day radar of every muscle group, and "where to focus" lists with suggested exercises and a one-tap workout builder.
