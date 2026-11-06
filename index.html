@@ -2326,6 +2326,7 @@ function normalize(){
   ['routines','workouts','custom','bw'].forEach(k=>{if(!Array.isArray(S[k]))S[k]=[]});
   if(!S.exPrefs||typeof S.exPrefs!=='object')S.exPrefs={};
   if(!S.sgoals||typeof S.sgoals!=='object')S.sgoals={};
+  if(S.profile&&S.profile.sex==='other')S.profile.sex=null;
   if(S.coach&&!Array.isArray(S.coach.hist))S.coach.hist=[];
   if(st.skin==='gold'&&!st.skinPicked)st.skin='peak';
   if(!S.profile||typeof S.profile!=='object')S.profile={sex:null,exp:null,freq:null};
@@ -3903,7 +3904,7 @@ function vWizard(){
   const W=UI.wiz;const o=W.o;const P=W.prof;const st=WSTEPS[W.step];let q='',body='',next=true;
   if(st==='start'){q='Create plan';next=false;body=`<div style="display:grid;gap:10px"><button class="wtile big ${''}" data-a="wizGo" data-v="1"><div class="row-between" style="width:100%"><b style="font-size:22px">Plan generator</b><span class="pill up">Recommended</span></div><ul><li>A complete plan built from your answers</li><li>Based on your goal, schedule, equipment and experience</li><li>Works for every level, from first gym visit to advanced</li></ul></button>
     <button class="wtile big" data-a="wizEmpty"><b style="font-size:22px">Empty plan</b><span>Build a plan from scratch with your own routines</span></button></div>`}
-  if(st==='about'){q='About you';next=P.sex&&P.exp;body=`<span class="label">Sex</span><div class="wtiles three">${[['male','Male'],['female','Female'],['other','Prefer not to say']].map(([k,l])=>wizTile('wizSex',k,P.sex===k,`<b style="font-size:19px">${l}</b>`,'','text')).join('')}</div>
+  if(st==='about'){q='About you';next=P.sex&&P.exp;body=`<span class="label">Sex</span><div class="wtiles two">${[['male','Male'],['female','Female']].map(([k,l])=>wizTile('wizSex',k,P.sex===k,`<b style="font-size:19px">${l}</b>`,'','text')).join('')}</div>
     <span class="label">Training experience</span><div class="wtiles three">${Object.entries(EXP).map(([k,[l,d]])=>wizTile('wizExp',k,P.exp===k,`<b style="font-size:19px">${l}</b>`,d,'text')).join('')}</div>
     <div class="field"><label class="label" for="wizbw">Body weight (${wu()}, optional)</label><input class="input mono" id="wizbw" inputmode="decimal" data-in="wizbw" value="${P.bw?esc(fw(P.bw)):''}" placeholder="e.g. ${isLb()?'170':'75'}"></div>
     <p class="muted small" style="margin:0">Used to pick sensible exercises, sets and starting weights. It stays on this device.</p>`}
@@ -4056,7 +4057,7 @@ function vPrefs(){
   const P=S.profile||{};
   return `<section class="block"><h1 class="h1">Settings</h1>
   <h2 class="h2">About you</h2><div class="panel">
-   <div class="setrow"><div class="lbl"><b>Sex</b><span>Used for starting weight estimates.</span></div><select id="psex" class="input" style="width:auto" data-in="prof" data-k="sex"><option value="">Not set</option>${[['male','Male'],['female','Female'],['other','Prefer not to say']].map(([k,l])=>`<option value="${k}" ${P.sex===k?'selected':''}>${l}</option>`).join('')}</select></div>
+   <div class="setrow"><div class="lbl"><b>Sex</b><span>Used for starting weight estimates.</span></div><select id="psex" class="input" style="width:auto" data-in="prof" data-k="sex"><option value="">Not set</option>${[['male','Male'],['female','Female']].map(([k,l])=>`<option value="${k}" ${P.sex===k?'selected':''}>${l}</option>`).join('')}</select></div>
    <div class="setrow"><div class="lbl"><b>Training experience</b><span>Sets the number of sets, warm-ups and plan defaults.</span></div><select id="pexp" class="input" style="width:auto" data-in="prof" data-k="exp"><option value="">Not set</option>${Object.entries(EXP).map(([k,[l,dd]])=>`<option value="${k}" ${P.exp===k?'selected':''}>${l} · ${dd}</option>`).join('')}</select></div>
    <div class="setrow"><div class="lbl"><b>Body weight</b><span>${latestBW()?`Latest: ${fwu(latestBW())}. Enter a new value to log it.`:'Log it to get starting weight estimates.'}</span></div><input id="pbw" class="input mono" style="width:110px" inputmode="decimal" data-in="pbw" placeholder="${wu()}" aria-label="Body weight in ${wu()}"></div>
    <div class="setrow"><div class="lbl"><b>Weekly workout goal</b><span>Shown with your streak. An active program sets this automatically.</span></div><select id="pfreq" class="input" style="width:auto" data-in="prof" data-k="freq"><option value="">Not set</option>${[1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${P.freq===n?'selected':''}>${n}× a week</option>`).join('')}</select></div>
