@@ -568,13 +568,18 @@ svg.hexb.lock{filter:none;background:none}.hx-in{fill:#12142a}.hx-q{font:800 22p
 .sk-n{display:flex;align-items:center;gap:10px}.sk-n b{font:800 52px/1 var(--f-display);color:#fb923c}.streak2.cold .sk-n b{color:var(--muted)}.sk-n span{font:700 14px/1.15 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.sk-w{display:block;color:#f59e0b;margin-top:4px}
 .sk-s{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);padding-top:12px;text-align:center}.sk-s div{display:grid;gap:2px}.sk-s div+div{border-left:1px solid var(--line)}.sk-s b{font-size:19px}.sk-s span{font-size:12px;color:var(--muted)}
 .sk-t{font:800 26px/1 var(--f-display);letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}.sk-t em{font-style:normal;color:#fb923c}.sk-b{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.sk-s2{font-size:13.5px;color:var(--muted)}.sk-s2 b{color:var(--ink);font-weight:600}
-.sk-p{border:0;white-space:nowrap;flex:none;font-weight:700;font-size:12.5px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,#f97316 16%,transparent);color:#fb923c}@media (max-width:440px){.streak4{display:grid;grid-template-columns:44px 1fr auto;gap:0 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.sk-p{border:0;white-space:nowrap;flex:none;font-weight:700;font-size:12.5px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,#f97316 16%,transparent);color:#fb923c}
+.streak4{display:grid;grid-template-columns:44px 1fr auto;gap:0 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
 .streak4 img{width:44px;display:block;filter:drop-shadow(0 3px 8px rgba(249,115,22,.35))}.streak4.cold img{filter:grayscale(1) brightness(.6)}
 .streak4 .sk-t{font:800 clamp(18px,5.4vw,24px)/1.05 var(--f-display);letter-spacing:.02em;text-transform:uppercase;white-space:nowrap}.streak4 .sk-t em{font-style:normal;color:#fb923c}
 .streak4 .sk-s2{font-size:clamp(11.5px,3.3vw,13px);color:var(--muted);margin-top:4px}.streak4 .sk-s2 b{color:var(--ink);font-weight:600}
 .sk-bx{display:grid;justify-items:center;padding:7px 10px;border-radius:12px;background:color-mix(in srgb,#f97316 14%,transparent);min-width:58px}.sk-bx b{font:800 20px/1 var(--f-display);color:#fb923c}.sk-bx span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:3px;white-space:nowrap}
 .streak4.cold .sk-t em,.streak4.cold .sk-bx b{color:var(--muted)}.streak4.cold .sk-bx{background:var(--raised)}.streak4 .sk-w{grid-column:2/4;color:#f59e0b;margin-top:6px}
 .pimg{display:block;object-fit:contain;flex:none}.ctile-i .pimg{width:46px!important;height:46px!important}.ctile-i.sm .pimg{width:38px!important;height:38px!important}.grt-i .pimg{width:50px!important;height:50px!important}.bn-i .pimg{width:46px!important;height:46px!important}.ctile-i:has(.pimg),.grt-i:has(.pimg),.bn-i:has(.pimg),.jgi:has(.pimg){background:none!important}.jgi .pimg{width:44px!important;height:44px!important}.mi .pimg{width:30px!important;height:30px!important}.cstats .pimg{width:28px!important;height:28px!important}.chgbtn .pimg{width:20px!important;height:20px!important}
+.exc-acts{flex-wrap:wrap}.exc-acts .btn{flex:1 1 auto;white-space:nowrap}
+.bbrow{flex-wrap:wrap;row-gap:2px}.bbrow svg{max-width:100%}.bbrow span{white-space:normal}
+.setrow select{max-width:250px;text-overflow:ellipsis}.setrow .lbl select{width:100%}.setrow .lbl{flex:1 1 140px}.setrow>select.input{max-width:140px}.setrow>input.input{max-width:110px}
+.lastline .lv{flex:1 1 150px;white-space:normal;overflow-wrap:anywhere}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
 .fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
@@ -2883,7 +2888,8 @@ function startGuess(id,lo,hi){
   if(hasBar(e))w=Math.max(w,barKg(e));w=floorInc(w,e);if(!w)return null;
   return {w,r:reps,kind:'est',when:'never',why:`Starting estimate from your profile (${fwu(bw)}, ${EXP[prof.exp][0].toLowerCase()}). It should feel like 2–3 reps short of failure; adjust if not`};
 }
-function latestBW(){const b=S.bw.filter(x=>!x.sample).sort((a,b)=>a.t-b.t).pop()||S.bw.slice().sort((a,b)=>a.t-b.t).pop();return b?b.kg:null}
+function latestBW(){const b=S.bw.filter(x=>!x.sample).sort((a,b)=>a.t-b.t).pop()||(realCount(S)?null:S.bw.slice().sort((a,b)=>a.t-b.t).pop());return b?b.kg:null}
+function logBW(kg){if(!(kg>0))return false;const last=S.bw.filter(x=>!x.sample).sort((a,b)=>a.t-b.t).pop();if(last&&Math.abs(last.kg-kg)<0.05&&Date.now()-last.t<DAY)return true;S.bw.push({t:Date.now(),kg});save();return true}
 /* streaks: consecutive Monday-start weeks with at least one workout */
 function weekStart(t){const d=new Date(t);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()}
 function streaks(){
@@ -4430,7 +4436,7 @@ const A={
   wizFocus(d){const f=UI.wiz.o.focus;if(d.v==='none')f.length=0;else{const k=f.indexOf(d.v);if(k>=0)f.splice(k,1);else{if(f.length>=2)f.shift();f.push(d.v)}}render()},
   wizWeeks(d){const o=UI.wiz.o;o.weeks=Math.max(2,Math.min(26,o.weeks+ +d.d));render()},
   wizCreate(){const W=UI.wiz;S.profile=Object.assign(S.profile||{},{sex:W.prof.sex,exp:W.prof.exp,goal:W.o.goal,freq:W.o.freq});
-    if(W.prof.bw&&Math.abs((latestBW()||0)-W.prof.bw)>0.05)S.bw.push({t:Date.now(),kg:W.prof.bw});
+    if(W.prof.bw)logBW(W.prof.bw);
     const {routines,program}=generatePlan(W.o);S.routines.push(...routines);S.programs.push(program);S.activeProgram=program.id;
     if(W.o.rir)S.settings.rir=S.settings.rir||false;UI.wiz=null;UI.progOpen=program.id;save();render();window.scrollTo(0,0);toast(`${program.name} created and set as your active plan`)},
   rtab(d){UI.rb=null;UI.cr=null;UI.rtab=d.t;UI.progOpen=null;UI.editProg=null;UI.editing=null;UI.wiz=null;render()},
@@ -4567,11 +4573,11 @@ document.addEventListener('input',ev=>{
     case 'eq':{const eq=S.settings.equipment;const k=d.k;if(el.checked){if(!eq.includes(k))eq.push(k)}else S.settings.equipment=eq.filter(x=>x!==k);save();break}
   }
 });
-document.addEventListener('change',ev=>{const el=ev.target.closest('[data-in]');if(!el)return;const k=el.dataset.in;if(k==='pbw'){const n=pnum(el.value);if(n&&n>0){S.bw.push({t:Date.now(),kg:fromD(n)});save();toast('Body weight logged')}}if(['prof','pbw','recs','perf','ref'].includes(k)&&UI.view==='prefs')render();if(S.active&&(k==='exRest'||k==='exRange'))render();if(k==='pref'&&UI.view==='progress')render();if(k==='pref'&&UI.sheet&&UI.sheet.kind==='exercise')renderSheet()});
+document.addEventListener('change',ev=>{const el=ev.target.closest('[data-in]');if(!el)return;const k=el.dataset.in;if(k==='pbw'){const n=pnum(el.value);if(n&&n>0){logBW(fromD(n));toast('Body weight saved everywhere in Peak')}}if(k==='wizbw'){const n=pnum(el.value);if(n&&n>0)logBW(fromD(n))}if(['prof','pbw','recs','perf','ref'].includes(k)&&UI.view==='prefs')render();if(S.active&&(k==='exRest'||k==='exRange'))render();if(k==='pref'&&UI.view==='progress')render();if(k==='pref'&&UI.sheet&&UI.sheet.kind==='exercise')renderSheet()});
 document.addEventListener('submit',ev=>{
   const f=ev.target;ev.preventDefault();
   if(f.dataset.form==='login'){A.acctIn({root:f});return}
-  if(f.dataset.form==='bw'){const n=pnum($('#bwin').value);if(n==null||n<=0){toast('Enter your weight as a number');return}S.bw.push({t:Date.now(),kg:fromD(n)});save();render();toast('Body weight logged')}
+  if(f.dataset.form==='bw'){const inp=f.querySelector('input');const n=pnum(inp?inp.value:'');if(n==null||n<=0){toast('Enter your weight as a number');return}logBW(fromD(n));render();toast('Body weight saved everywhere in Peak')}
   if(f.dataset.form==='custom'){const fd=new FormData(f);const name=String(fd.get('name')||'').trim();if(!name)return;let id='c-'+slug(name);if(EXM[id])id+='-'+uid().slice(0,4);S.custom.push({id,name,muscle:fd.get('muscle'),type:fd.get('type'),eq:fd.getAll('eq'),custom:true,fm:null});rebuildEx();save();UI.sheet=null;render();toast(`${name} created`)}
 });
 document.addEventListener('focusin',ev=>{if(ev.target&&ev.target.id==='barin')setTimeout(()=>{try{ev.target.select()}catch(e){}},0)});
