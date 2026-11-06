@@ -580,6 +580,12 @@ svg.hexb.lock{filter:none;background:none}.hx-in{fill:#12142a}.hx-q{font:800 22p
 .bbrow{flex-wrap:wrap;row-gap:2px}.bbrow svg{max-width:100%}.bbrow span{white-space:normal}
 .setrow select{max-width:250px;text-overflow:ellipsis}.setrow .lbl select{width:100%}.setrow .lbl{flex:1 1 140px}.setrow>select.input{max-width:140px}.setrow>input.input{max-width:110px}
 .lastline .lv{flex:1 1 150px;white-space:normal;overflow-wrap:anywhere}
+.journey .jr .bdg{--bh:188px!important}.journey .jr.lock .bdg{--bh:160px!important}.journey .jr.nx .bdg{--bh:170px!important}
+.jcurve{display:block;width:100%;height:150px;margin:-14px 0;overflow:visible}.jcurve path{fill:none;stroke:#f5a623;stroke-width:6;stroke-dasharray:16 13;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.journey .jt b{color:#f5a623!important;font-size:22px}.journey .jt>span:first-of-type{color:var(--ink);font-weight:700;font-size:16px}
+.journey .jr{gap:18px}.journey .jr.on .bdg img{filter:drop-shadow(0 6px 18px rgba(245,166,35,.25))}.journey .jr .ac{color:#f5a623}
+.rfirst{display:grid;gap:6px;font-size:13.5px;color:var(--muted);line-height:1.45}.rfirst>b{color:var(--ink);font-size:15px}.rfirst span b{color:var(--ink)}
+.rpill{justify-self:start;font-weight:700;font-size:12px;padding:4px 10px;border-radius:999px;color:#f5a623;background:color-mix(in srgb,#f5a623 15%,transparent)}
 .rd-g{fill:none;stroke:var(--line);stroke-width:.35}.rd-v{fill:var(--accent);fill-opacity:.28;stroke:var(--accent);stroke-width:.8;stroke-linejoin:round}.rd-d{fill:var(--accent)}
 .rd-ic{position:absolute;transform:translate(-50%,-50%)}.rd-ic .mth{width:34px;height:34px;border-radius:50%;display:block}
 .fx{display:grid;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}.fx:last-child{border-bottom:0}
@@ -2306,7 +2312,7 @@ function rebuildEx(){EXM={};for(const e of BASE)EXM[e.id]=e;for(const e of (S.cu
 const ex=id=>EXM[id]||{id,name:'Unknown exercise',muscle:'full',fm:'full',eq:[],type:'wr'};
 const PLATES_KG=[25,20,15,10,5,2.5,1.25];
 const PLATES_LB=[45,35,25,10,5,2.5];
-function defaults(){return {v:2,settings:{unit:'kg',barKg:20,rest:'auto',warm:'auto',autoWarm:true,skin:'peak',recs:true,ref:'exercise',perf:'e1',rir:false,equipment:Object.keys(EQ),platesKg:PLATES_KG.slice(),platesLb:PLATES_LB.slice()},routines:[],workouts:[],active:null,custom:[],bw:[],exPrefs:{},activeProgram:null,profile:{sex:null,exp:null,freq:null}}}
+function defaults(){return {v:2,settings:{unit:'kg',barKg:20,rest:'auto',warm:'auto',autoWarm:true,skin:'peak',recs:true,restSound:true,restVib:true,restNotify:true,wakeLock:false,restHeads:false,ref:'exercise',perf:'e1',rir:false,equipment:Object.keys(EQ),platesKg:PLATES_KG.slice(),platesLb:PLATES_LB.slice()},routines:[],workouts:[],active:null,custom:[],bw:[],exPrefs:{},activeProgram:null,profile:{sex:null,exp:null,freq:null}}}
 function normalize(){
   const st=S.settings=Object.assign(defaults().settings,S.settings||{});
   if(st.barKg==null||isNaN(st.barKg))st.barKg=st.bar!=null?(st.unit==='lb'?st.bar/2.2046226:+st.bar):20;
@@ -3275,8 +3281,8 @@ function legacyCard(){const kg=totalKg();const L=legacyAt(kg);const prevLb=L.cur
   ${L.next?`<div class="row-between"><b>Next: ${L.next[0]}</b><span class="muted small">${fBig(mKg(L.next[1])-kg)} ${wu()} left</span></div><div class="fx-bar thick"><i style="width:${pct}%"></i></div>`:'<b>Every milestone unlocked. Legendary.</b>'}
   <button class="leg-foot" data-a="journey">${L.cur?`${hexBadge(L.cur,'on',34)}<span>${L.cur[0]} unlocked · ${L.i+1} of ${MILES.length}</span>`:`<span>Lift ${fBig(mKg(MILES[0][1]))} ${wu()} in total to unlock your first badge</span>`}<span class="ac">View journey ›</span></button></div>`}
 function shJourney(){const kg=totalKg();const L=legacyAt(kg);
-  const items=MILES.map((m,k)=>({m,k})).reverse().map(({m,k})=>{const st=k<=L.i?'on':k===L.i+1?'nx':'lock';const side=k%2?'r':'l';
-    return `<div class="jr ${side} ${st}" ${st==='nx'||(st==='on'&&k===L.i&&!L.next)?'id="jcur"':''}>${hexBadge(m,st==='nx'?'lock':st,st==='lock'?72:88)}<div class="jt"><b>${m[0]}</b><span>${fBig(mKg(m[1]))} ${wu()}</span>${st==='nx'?`<span class="ac small">${fBig(mKg(m[1])-kg)} ${wu()} to go</span>`:''}</div></div>`}).join('<div class="jpath"></div>');
+  const items=MILES.map((m,k)=>({m,k})).reverse().map(({m,k},n,arr)=>{const gap=n?`<svg class="jcurve" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M${arr[n-1].k%2?84:16} 0 C ${arr[n-1].k%2?84:16} 70, ${k%2?84:16} 30, ${k%2?84:16} 100"/></svg>`:'';const st=k<=L.i?'on':k===L.i+1?'nx':'lock';const side=k%2?'r':'l';
+    return gap+`<div class="jr ${side} ${st}" ${st==='nx'||(st==='on'&&k===L.i&&!L.next)?'id="jcur"':''}>${hexBadge(m,st==='nx'?'lock':st,st==='lock'?120:140)}<div class="jt"><b>${m[0]}</b><span>${fBig(mKg(m[1]))} ${wu()}</span>${st==='nx'?`<span class="ac small">${fBig(mKg(m[1])-kg)} ${wu()} to go</span>`:''}</div></div>`}).join('');
   return sheet('Your lifting journey',`<p class="muted small" style="margin:0;text-align:center">Every rep you log adds to your total. ${fBig(kg)} ${wu()} lifted so far.</p><div class="journey">${items}</div>`,'',{tall:true})}
 function journeyGrid(){let t=0,prs=0;S.workouts.forEach(w=>{t+=(w.end||w.start)-w.start;prs+=(w.prs||[]).length});const h=Math.floor(t/36e5),m=Math.round(t%36e5/6e4);
   const tile=(ic,c,v,l)=>`<div class="jg"><span class="jgi" style="--c:${c}">${ic}</span><div><b>${v}</b><span>${l}</span></div></div>`;
@@ -4056,6 +4062,14 @@ function vPrefs(){
    <div class="setrow"><div class="lbl"><b>Weekly workout goal</b><span>Shown with your streak. An active program sets this automatically.</span></div><select id="pfreq" class="input" style="width:auto" data-in="prof" data-k="freq"><option value="">Not set</option>${[1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${P.freq===n?'selected':''}>${n}× a week</option>`).join('')}</select></div>
   </div></section>
   <section class="block"><h2 class="h2">Theme</h2><div class="themes">${THEMES.map(([k,l,bg,ac,sf])=>`<button class="thm ${(st.skin||'peak')===k?'on':''}" data-a="setSkin" data-k="${k}" aria-pressed="${(st.skin||'peak')===k}"><span class="sw" style="background:${k==='auto'?`linear-gradient(135deg,${bg} 50%,${sf} 50%)`:bg}"><i style="background:${ac}"></i><i style="background:${sf};border:1px solid rgba(127,127,127,.35)"></i></span><b>${l}</b></button>`).join('')}</div></section>
+  <section class="block"><h2 class="h2">Rest timer alerts</h2><div class="panel">
+   <div class="setrow"><div class="lbl"><b>Notify me when rest is over</b><span>Works with the screen off or locked, and while you're in another app.</span></div><input type="checkbox" class="tgl" id="rnotify" data-in="rset" data-k="restNotify" ${st.restNotify!==false?'checked':''}></div>
+   <div class="setrow"><div class="lbl"><b>Sound</b><span>A short beep when rest ends (while Peak is open).</span></div><input type="checkbox" class="tgl" id="rsound" data-in="rset" data-k="restSound" ${st.restSound!==false?'checked':''}></div>
+   <div class="setrow"><div class="lbl"><b>Vibrate</b><span>Android only. iPhones don't let websites vibrate.</span></div><input type="checkbox" class="tgl" id="rvib" data-in="rset" data-k="restVib" ${st.restVib!==false?'checked':''}></div>
+   <div class="setrow"><div class="lbl"><b>Keep screen on during workouts</b><span>Stops the phone from going dark while a workout is running.</span></div><input type="checkbox" class="tgl" id="rwake" data-in="rset" data-k="wakeLock" ${st.wakeLock===true?'checked':''}></div>
+   <div class="setrow"><div class="lbl"><b>Heads-up</b><span>Also notify me 10 seconds before rest ends.</span></div><input type="checkbox" class="tgl" id="rheads" data-in="rset" data-k="restHeads" ${st.restHeads?'checked':''}></div>
+  </div>
+  <div class="panel rfirst"><b>First time you start a workout</b><span>Peak asks: <i>"Allow Peak to send notifications?"</i> Tap <b>Allow</b> once.</span><span class="rpill">iPhone: only works from the home-screen icon</span></div></section>
   <section class="block"><h2 class="h2">Training</h2><div class="panel">
    <div class="setrow"><div class="lbl"><b>Smart Weights</b><span>Pre-fills each set with your next target. It goes up by the right step for the lift (bigger for squats and deadlifts) once you hit the top of your rep range on every set, and holds if you miss.</span></div><input type="checkbox" class="tgl" id="recs" data-in="recs" ${st.recs!==false?'checked':''}></div>
    <div class="setrow"><div class="lbl"><b>Reference workout</b><span>Which past session the "Previous" column and suggestions compare to.</span></div><select id="refsel" class="input" style="width:auto" data-in="ref"><option value="exercise" ${st.ref!=='planday'?'selected':''}>Last time I did the exercise</option><option value="planday" ${st.ref==='planday'?'selected':''}>Same plan day</option></select></div>
@@ -4195,7 +4209,7 @@ function shCustom(){
 }
 
 /* ---------- rest timer ---------- */
-function startRest(sec){const a=S.active;if(!a)return;a.restT={start:Date.now(),total:sec||0,beeped:!sec};save();renderRest()}
+function startRest(sec){const a=S.active;if(!a)return;a.restT={start:Date.now(),total:sec||0,beeped:!sec};save();renderRest();askNotify();wakeSync()}
 function renderRest(){
   const el=$('#restbar');const a=S.active;const r=a&&a.restT;if(!r){el.hidden=true;el.innerHTML='';el.className='restbar';return}
   el.hidden=false;el.innerHTML=`<div class="in" role="timer" aria-live="off"><span class="t"><b id="restt"></b><small id="restsub"></small></span><button data-a="restAdj" data-d="-15" aria-label="15 seconds less">−15</button><button data-a="restAdj" data-d="15" aria-label="15 seconds more">+15</button><button data-a="restSkip">Hide</button><div class="bar" id="restbarfill"></div></div>`;
@@ -4207,10 +4221,17 @@ function paintRest(){
   const t=$('#restt'),sub=$('#restsub'),f=$('#restbarfill');if(!t)return;
   if(r.total&&left>0){t.textContent=ft(left);sub.textContent=`resting ${ft(since)} of ${ft(r.total)}`;el.classList.remove('over');f.style.width=(left/r.total*100)+'%'}
   else{t.textContent=r.total?`+${ft(-left)}`:ft(since);sub.textContent=r.total?`rested ${ft(since)} · target ${ft(r.total)} done`:`rested ${ft(since)}`;el.classList.toggle('over',!!r.total);f.style.width='0%'}
-  if(r.total&&left<=0&&!r.beeped){r.beeped=true;save();beep();toast('Rest done. Next set when ready.')}
+  if(r.total&&S.settings.restHeads&&left<=10&&left>0&&!r.headed){r.headed=true;save();restNotify(true);try{S.settings.restVib!==false&&navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
+  if(r.total&&left<=0&&!r.beeped){r.beeped=true;save();beep();restNotify(false);toast('Rest done. Next set when ready.')}
 }
-function beep(){try{const c=UI.audio;if(!c)return;if(c.state==='suspended')c.resume();[0,.22,.44].forEach(d=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=d<.4?880:1320;g.gain.setValueAtTime(.0001,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.25,c.currentTime+d+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)})}catch(e){}try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+function restNext(){const a=S.active;if(!a)return null;for(const ae of a.exercises){const j=ae.sets.findIndex(s=>!s.done&&s.type!=='W');if(j>=0){const n=ae.sets.slice(0,j+1).filter(s=>s.type!=='W').length;return {name:ex(ae.exId).name,n,of:ae.sets.filter(s=>s.type!=='W').length}}}return null}
+function restNotify(head){const st=S.settings;if(st.restNotify===false||!('Notification' in window)||Notification.permission!=='granted')return;if(!document.hidden&&!head)return;const nx=restNext();const body=nx?`${nx.name} · Set ${nx.n} of ${nx.of}`:'Time for your next set';
+  const t=head?'Rest ends in 10 seconds':'Rest\u2019s over \uD83D\uDCAA';try{navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.showNotification(t,{body,tag:'peak-rest',renotify:true,icon:'icon-192.png',badge:'icon-192.png'})).catch(()=>{})}catch(e){}}
+let WL=null,WLT=0;async function wakeSync(){WLT=Date.now();try{const want=!!(S.active&&S.settings.wakeLock===true&&!document.hidden);if(want&&!WL&&navigator.wakeLock){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}else if(!want&&WL){await WL.release();WL=null}}catch(e){WL=null}}
+function askNotify(){try{if(S.settings.restNotify!==false&&'Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}catch(e){}}
+function beep(){if(S.settings.restSound===false){try{S.settings.restVib!==false&&navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}return}try{const c=UI.audio;if(!c)return;if(c.state==='suspended')c.resume();[0,.22,.44].forEach(d=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=d<.4?880:1320;g.gain.setValueAtTime(.0001,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.25,c.currentTime+d+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)})}catch(e){}try{S.settings.restVib!==false&&navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
 function tick(){
+  if((S.active&&!WL&&S.settings.wakeLock===true&&!document.hidden&&Date.now()-WLT>15000)||(!S.active&&WL))wakeSync();
   if(S.active){const t=ft((Date.now()-S.active.start)/1000);const a=$('#elapsed');if(a)a.textContent=t;const b=$('#livetime');if(b)b.textContent=t}
   paintRest();
 }
@@ -4546,6 +4567,7 @@ document.addEventListener('input',ev=>{
     case 'wizdle':UI.wiz.o.deloadEvery=+v;break;
     case 'prof':{const k=d.k;S.profile[k]=k==='freq'?(v?+v:null):(v||null);save();break}
     case 'recs':S.settings.recs=el.checked;save();break;
+    case 'rset':S.settings[el.dataset.k]=el.checked;save();if(el.dataset.k==='restNotify'&&el.checked)askNotify();wakeSync();break;
     case 'rirset':S.settings.rir=el.checked;if(S.active){S.active.rirT=el.checked?((S.profile||{}).exp==='beginner'?3:2):null}save();break;
     case 'ref':S.settings.ref=v;save();break;
     case 'perf':S.settings.perf=v;save();break;
@@ -4603,7 +4625,7 @@ document.addEventListener('click',ev=>{
   document.addEventListener('touchend',e=>{if(VIEW&&x0!=null){const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>45)lbStep(dx<0?1:-1)}x0=null},{passive:true})})();
 document.addEventListener('keydown',ev=>{if(VIEW){if(ev.key==='Escape'){lbClose();ev.stopImmediatePropagation();return}if(ev.key==='ArrowRight')lbStep(1);if(ev.key==='ArrowLeft')lbStep(-1)}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target&&ev.target.id==='barin'){ev.target.blur();return}if(ev.key==='Escape'&&UI.sheet){UI.sheet=null;renderSheet()}});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)tick()});
+document.addEventListener('visibilitychange',()=>{wakeSync();if(!document.hidden)tick()});
 function route(){let h=location.hash.replace('#','');if(h==='programs'){h='routines';UI.rtab='programs';UI.progOpen=null;UI.editProg=null;UI.wiz=null;UI.editing=null}UI.view=VIEWS.includes(h)?h:'today';if(UI.view!=='routines'){UI.progOpen=null;UI.editProg=null;UI.wiz=null}if(UI.view!=='routines')UI.editing=null;UI.sheet=null;render();window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
 
