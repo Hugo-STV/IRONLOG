@@ -200,6 +200,9 @@ section.block{display:grid;gap:12px;margin-top:26px}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
 .mtile{display:grid;justify-items:center;gap:2px;border:1px solid var(--line);background:var(--tile);border-radius:14px;padding:6px 4px 8px;font-weight:600;font-size:12.5px;color:var(--ink)}
 .mtile svg{width:100%;height:64px;display:block}
+.mtile img{width:100%;min-width:0;height:64px;display:block;object-fit:cover;border-radius:9px}
+.mgrid>.mtile{min-width:0}
+img.mth{object-fit:cover;display:block;box-sizing:border-box}
 .mtile.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
 .mth{width:38px;height:38px;flex:none;border-radius:9px;background:var(--tile);border:1px solid var(--line);padding:2px}
 .exc-h .mth{width:44px;height:44px}
@@ -789,7 +792,8 @@ function bodySprite(){let s='';for(const k in FM_FIG){const [v,hl,vb]=FM_FIG[k];
   s+=`<symbol id="mu-cardio" viewBox="0 0 48 40"><path d="M24 36 C10 26 4 19 4 12 A9 9 0 0 1 24 8 A9 9 0 0 1 44 12 C44 19 38 26 24 36Z" fill="var(--reg)"/><path d="M6 20 H15 L18 13 L22 27 L26 17 L28 20 H42" fill="none" stroke="var(--hl)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>`;
   s+=`<symbol id="mu-mobility" viewBox="0 0 48 40"><circle cx="24" cy="7" r="4" fill="var(--sil)"/><path d="M24 12 V24 M24 14 L13 5 M24 14 L35 5 M24 24 L12 36 M24 24 L36 36" stroke="var(--hl)" stroke-width="3.2" stroke-linecap="round" fill="none"/><path d="M6 36 Q24 30 42 36" stroke="var(--reg)" stroke-width="2" fill="none"/></symbol>`;
   return `<svg width="0" height="0" style="position:absolute;width:0;height:0" aria-hidden="true" focusable="false"><defs>${s}</defs></svg>`}
-const mth=(fm,cls='mth')=>`<svg class="${cls}" aria-hidden="true"><use href="#mu-${fm}"/></svg>`;
+const MUS=new Set(['chest','frontdelts','sidedelts','reardelts','traps','upperback','lats','lowerback','biceps','triceps','forearms','abs','glutes','abductors','adductors','quads','hams','calves','full','cardio','mobility']);
+const mth=(fm,cls='mth')=>MUS.has(fm)?`<img class="${cls}" src="mus/${cls?'i':'t'}_${fm}.webp" alt="" aria-hidden="true" decoding="async">`:`<svg class="${cls}" aria-hidden="true"><use href="#mu-${fm}"/></svg>`;
 const TYPES={wr:'Weight × reps',r:'Bodyweight reps',t:'Timed hold',wt:'Weight × time',dt:'Distance × time'};
 const RAW=`Bench Press (Barbell)|chest|bb bn rk|wr
 Incline Bench Press (Barbell)|chest|bb bn rk|wr
@@ -4192,7 +4196,12 @@ function shExercise(s){
   `${S.active?`<button class="btn primary" data-a="addToActive" data-id="${e.id}">Add to workout</button>`:`<button class="btn primary" data-a="startWith" data-id="${e.id}">Start workout with it</button>`}${sess.length?`<button class="btn" data-a="viewProgress" data-id="${e.id}">Full progress</button>`:''}${e.custom?`<button class="btn ghost danger" data-a="delCustom" data-id="${e.id}">Delete</button>`:''}`);
 }
 const CONFIRMS={discard:['Discard this workout?','Every set you logged in this session will be lost.','Discard'],delRoutine:['Delete this routine?','Your past workouts stay in history.','Delete routine'],delWorkout:['Delete this workout?','It will be removed from history and charts.','Delete workout'],reset:['Erase everything?','All workouts, routines, custom exercises and settings in this browser will be deleted. Export a backup first if you might want them.','Erase everything'],delProgram:['Delete this program?','Workouts you already finished stay in your history.','Delete program'],resetProgram:['Reset program progress?','All weeks go back to not started. Your workout history is kept.','Reset'],emptyFinish:['No completed sets','Tick at least one set before finishing, or discard the workout.','Discard workout']};
-function shConfirm(s){const c=CONFIRMS[s.what];return sheet(c[0],`<p style="margin:0">${esc(c[1])}</p>`,`<button class="btn" data-a="closeSheet">${s.what==='emptyFinish'?'Keep logging':'Cancel'}</button><button class="btn primary" style="background:var(--danger);border-color:var(--danger);color:#fff" data-a="doConfirm" data-what="${s.what==='emptyFinish'?'discard':s.what}" data-id="${s.id||''}">${c[2]}</button>`)}
+function shConfirm(s){if(s.what==='finish'||s.what==='discard')return shWkConfirm(s);const c=CONFIRMS[s.what];return sheet(c[0],`<p style="margin:0">${esc(c[1])}</p>`,`<button class="btn" data-a="closeSheet">${s.what==='emptyFinish'?'Keep logging':'Cancel'}</button><button class="btn primary" style="background:var(--danger);border-color:var(--danger);color:#fff" data-a="doConfirm" data-what="${s.what==='emptyFinish'?'discard':s.what}" data-id="${s.id||''}">${c[2]}</button>`)}
+function shWkConfirm(s){const a=S.active;if(!a)return '';const o=volOf(a);let open=0;a.exercises.forEach(ae=>ae.sets.forEach(x=>{if(!x.done)open++}));
+const fin=s.what==='finish';const dur=ft((Date.now()-a.start)/1000);
+const stats=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:2px 0 12px">${[[dur,'Time'],[o.n,'Sets done'],[fvol(o.v)+' '+wu(),'Volume']].map(([v,l])=>`<div style="background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center"><div style="font-weight:800;font-size:17px">${v}</div><div class="muted" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-top:2px">${l}</div></div>`).join('')}</div>`;
+const body=fin?`${stats}<p style="margin:0">This saves the workout to your history.${open?` <b>${open} set${open>1?'s':''} not ticked</b> won't be saved.`:''}</p>`:`${stats}<p style="margin:0">Everything you logged in this session will be lost. This can't be undone.</p>`;
+return sheet(fin?'Finish workout?':'Discard this workout?',body,`<button class="btn" data-a="closeSheet">Keep going</button>${fin?`<button class="btn primary" data-a="doFinish">Finish workout</button>`:`<button class="btn primary" style="background:var(--danger);border-color:var(--danger);color:#fff" data-a="doConfirm" data-what="discard">Discard</button>`}`)}
 const framed=(()=>{try{return window.self!==window.top}catch(e){return true}})();
 function shExport(){
   const json=JSON.stringify(S);
@@ -4210,7 +4219,7 @@ function shCustom(){
 }
 
 /* ---------- rest timer ---------- */
-function startRest(sec){const a=S.active;if(!a)return;a.restT={start:Date.now(),total:sec||0,beeped:!sec};save();renderRest();askNotify();wakeSync()}
+function startRest(sec){const a=S.active;if(!a)return;a.restT={start:Date.now(),total:sec||0,beeped:!sec};save();renderRest();askNotify();wakeSync();nativeRest(sec||0)}
 function renderRest(){
   const el=$('#restbar');const a=S.active;const r=a&&a.restT;if(!r){el.hidden=true;el.innerHTML='';el.className='restbar';return}
   el.hidden=false;el.innerHTML=`<div class="in" role="timer" aria-live="off"><span class="t"><b id="restt"></b><small id="restsub"></small></span><button data-a="restAdj" data-d="-15" aria-label="15 seconds less">−15</button><button data-a="restAdj" data-d="15" aria-label="15 seconds more">+15</button><button data-a="restSkip">Hide</button><div class="bar" id="restbarfill"></div></div>`;
@@ -4225,13 +4234,16 @@ function paintRest(){
   if(r.total&&S.settings.restHeads&&left<=10&&left>0&&!r.headed){r.headed=true;save();restNotify(true);try{S.settings.restVib!==false&&navigator.vibrate&&navigator.vibrate(120)}catch(e){}}
   if(r.total&&left<=0&&!r.beeped){r.beeped=true;save();beep();restNotify(false);toast('Rest done. Next set when ready.')}
 }
-function restNext(){const a=S.active;if(!a)return null;for(const ae of a.exercises){const j=ae.sets.findIndex(s=>!s.done&&s.type!=='W');if(j>=0){const n=ae.sets.slice(0,j+1).filter(s=>s.type!=='W').length;return {name:ex(ae.exId).name,n,of:ae.sets.filter(s=>s.type!=='W').length}}}return null}
+function restNext(){const a=S.active;if(!a)return null;for(const ae of a.exercises){const j=ae.sets.findIndex(s=>!s.done&&s.type!=='W');if(j>=0){const n=ae.sets.slice(0,j+1).filter(s=>s.type!=='W').length;let tg='';try{const c=cardCtx(ae);const t=setTarget(ae,j,c.sg,prevFor(ae,j,c.prev));if(t&&t.r)tg=`Today: ${t.w!=null&&ex(ae.exId).type==='wr'?fwu(t.w)+' \u00d7 ':''}${t.r}${ex(ae.exId).type==='wr'?'':' reps'}`}catch(e){}return {name:ex(ae.exId).name,n,of:ae.sets.filter(s=>s.type!=='W').length,tg}}}return null}
+/* Android app: native rest alarm (works with the screen off or the app closed). Does nothing in the browser. */
+let NR=false;function nativeRest(sec){try{if(!window.PeakNative)return;if(NR){PeakNative.cancel(1);PeakNative.cancel(2);NR=false}if(!sec||sec<1||!S.active||S.settings.restNotify===false)return;const nx=restNext();const body=nx?`${nx.name} \u00b7 Set ${nx.n} of ${nx.of}${nx.tg?' \u00b7 '+nx.tg:''}`:'Time for your next set';PeakNative.schedule(1,Math.round(sec),'Rest\u2019s over \uD83D\uDCAA',body);if(S.settings.restHeads&&sec>12)PeakNative.schedule(2,Math.round(sec-10),'Rest ends in 10 seconds',body);NR=true}catch(e){}}
 function restNotify(head){const st=S.settings;if(st.restNotify===false||!('Notification' in window)||Notification.permission!=='granted')return;if(!document.hidden&&!head)return;const nx=restNext();const body=nx?`${nx.name} · Set ${nx.n} of ${nx.of}`:'Time for your next set';
   const t=head?'Rest ends in 10 seconds':'Rest\u2019s over \uD83D\uDCAA';try{navigator.serviceWorker&&navigator.serviceWorker.ready.then(r=>r.showNotification(t,{body,tag:'peak-rest',renotify:true,icon:'icon-192.png',badge:'icon-192.png'})).catch(()=>{})}catch(e){}}
 let WL=null,WLT=0;async function wakeSync(){WLT=Date.now();try{const want=!!(S.active&&S.settings.wakeLock===true&&!document.hidden);if(want&&!WL&&navigator.wakeLock){WL=await navigator.wakeLock.request('screen');WL.addEventListener('release',()=>{WL=null})}else if(!want&&WL){await WL.release();WL=null}}catch(e){WL=null}}
 function askNotify(){try{if(S.settings.restNotify!==false&&'Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}catch(e){}}
 function beep(){if(S.settings.restSound===false){try{S.settings.restVib!==false&&navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}return}try{const c=UI.audio;if(!c)return;if(c.state==='suspended')c.resume();[0,.22,.44].forEach(d=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=d<.4?880:1320;g.gain.setValueAtTime(.0001,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.25,c.currentTime+d+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)})}catch(e){}try{S.settings.restVib!==false&&navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
 function tick(){
+  if(NR&&(!S.active||!S.active.restT))nativeRest(0);
   if((S.active&&!WL&&S.settings.wakeLock===true&&!document.hidden&&Date.now()-WLT>15000)||(!S.active&&WL))wakeSync();
   if(S.active){const t=ft((Date.now()-S.active.start)/1000);const a=$('#elapsed');if(a)a.textContent=t;const b=$('#livetime');if(b)b.textContent=t}
   paintRest();
@@ -4324,11 +4336,15 @@ const A={
     } else {s.done=false;s.rest=null;s.doneAt=null}
     save();render();if(UI.scrollTo!=null){scrollCard(UI.scrollTo);UI.scrollTo=null}
   },
-  restAdj(d){const r=S.active&&S.active.restT;if(!r)return;r.total=Math.max(0,r.total+ +d.d);if(r.total>(Date.now()-r.start)/1000)r.beeped=false;save();paintRest()},
-  restSkip(){if(S.active){S.active.restT=null;save()}renderRest()},
+  restAdj(d){const r=S.active&&S.active.restT;if(!r)return;r.total=Math.max(0,r.total+ +d.d);if(r.total>(Date.now()-r.start)/1000)r.beeped=false;save();paintRest();nativeRest(r.total-(Date.now()-r.start)/1000)},
+  restSkip(){if(S.active){S.active.restT=null;save()}renderRest();nativeRest(0)},
   finish(){
     const a=S.active;const done=a.exercises.some(ae=>ae.sets.some(s=>s.done));
     if(!done){UI.sheet={kind:'confirm',what:'emptyFinish'};renderSheet();return}
+    UI.sheet={kind:'confirm',what:'finish'};renderSheet();
+  },
+  doFinish(){
+    const a=S.active;if(!a){UI.sheet=null;render();return}
     const w=clone(a);w.end=Date.now();delete w.restT;w.exercises=w.exercises.map(ae=>({...ae,sets:ae.sets.filter(s=>s.done)})).filter(ae=>ae.sets.length);
     w.exercises.forEach(ae=>{if(ae.repMin||ae.repMax){setPref(ae.exId,'repMin',ae.repMin);setPref(ae.exId,'repMax',ae.repMax)}});
     w.prs=findPRs(w);S.workouts.push(w);S.active=null;
